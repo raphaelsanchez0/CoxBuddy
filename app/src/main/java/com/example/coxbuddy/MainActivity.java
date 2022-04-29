@@ -16,6 +16,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
@@ -40,9 +41,17 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView AddressText;
     private Button LocationButton;
+
+    private Button startStopButton;
+
     private LocationRequest locationRequest;
     private LatLng currentLocation;
     private LatLng previousLocation;
+
+    private final int milliseconds = 1000;
+    private Handler periodicLocationHandler;
+    private final int locationRefreshDelay = 5;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +60,18 @@ public class MainActivity extends AppCompatActivity {
 
         AddressText = findViewById(R.id.addressText);
         LocationButton = findViewById(R.id.locationButton);
+        startStopButton = findViewById(R.id.start_stop_button);
+
 
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(5000);
         locationRequest.setFastestInterval(2000);
+
+        periodicLocationHandler = new Handler();
+
+
+
 
         LocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,9 +80,41 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        Runnable runnableCode = new Runnable() {
+            @Override
+            public void run() {
+                // Do something here on the main thread
+                Log.d("Handlers", "Called on main thread");
+                // Repeat this the same runnable code block again another 2 seconds
+                // 'this' is referencing the Runnable object
+                periodicLocationHandler.postDelayed(this, locationRefreshDelay*milliseconds);
+            }
+        };
+
+        startStopButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                periodicLocationHandler.post(runnableCode);
+            };
+
+        });
 
 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
