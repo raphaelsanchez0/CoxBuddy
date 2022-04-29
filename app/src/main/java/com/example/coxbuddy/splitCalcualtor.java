@@ -1,10 +1,10 @@
 package com.example.coxbuddy;
 
-public class split {
+public class splitCalcualtor {
     public static Double getSplit(double lat1, double lon1, double lat2, double lon2, double time) {
         final int splitDistance = 500;
         double distance = getDistanceFromCordinates.gpsDistance(lat1, lon1, lat2, lon2);
-        Double splitInSeconds = ((double) time / distance) * splitDistance;
+        double splitInSeconds = (((double) time / distance) * splitDistance)/1000;
         return splitInSeconds;
 
     }

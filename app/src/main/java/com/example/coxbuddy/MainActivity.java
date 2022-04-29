@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private LatLng currentLocation;
     private LatLng previousLocation;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
