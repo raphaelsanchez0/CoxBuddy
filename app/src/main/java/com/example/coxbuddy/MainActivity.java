@@ -24,6 +24,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import com.example.coxbuddy.R;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -37,6 +41,12 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView AddressText;
@@ -45,12 +55,18 @@ public class MainActivity extends AppCompatActivity {
     private Button startStopButton;
 
     private LocationRequest locationRequest;
-    private LatLng currentLocation;
-    private LatLng previousLocation;
+    //private LatLng currentLocation;
+    //private LatLng previousLocation;
+
+    private ArrayList<Object> currentLocation = new ArrayList<Object>();
+    private ArrayList<Object> previousLocation = new ArrayList<Object>();
+
 
     private final int milliseconds = 1000;
     private Handler periodicLocationHandler;
     private final int locationRefreshDelay = 5;
+
+
 
 
     @Override
@@ -70,7 +86,10 @@ public class MainActivity extends AppCompatActivity {
 
         periodicLocationHandler = new Handler();
 
-
+        currentLocation.add(null);
+        currentLocation.add(null);
+        previousLocation.add(null);
+        previousLocation.add(null);
 
 
         LocationButton.setOnClickListener(new View.OnClickListener() {
@@ -83,10 +102,14 @@ public class MainActivity extends AppCompatActivity {
         Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
+
                 // Do something here on the main thread
-                Log.d("Handlers", "Called on main thread");
-                // Repeat this the same runnable code block again another 2 seconds
-                // 'this' is referencing the Runnable object
+                Log.d("curTime", currentLocation.get(1)+"");
+                //previousLocation = currentLocation;
+                getCurrentLocation();
+
+
+
                 periodicLocationHandler.postDelayed(this, locationRefreshDelay*milliseconds);
             }
         };
@@ -101,19 +124,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     @Override
@@ -171,9 +181,10 @@ public class MainActivity extends AppCompatActivity {
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
                                         //coordinates = new LatLng(latitude,longitude);
-
-                                        currentLocation = new LatLng(latitude,longitude);
-
+                                        currentLocation.set(0,new LatLng(latitude,longitude));
+                                        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                                        currentLocation.set(1,currentTime);
+                                        //Log.d("time",currentLocation.get(1)+"");
                                         AddressText.setText("Latitude: "+ latitude + "\n" + "Longitude: "+ longitude);
                                     }
                                 }
