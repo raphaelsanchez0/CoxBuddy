@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -57,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         LocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 getCurrentLocation();
             }
         });
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getCurrentLocation() {
+    public void getCurrentLocation() {
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -120,6 +120,9 @@ public class MainActivity extends AppCompatActivity {
                                         int index = locationResult.getLocations().size() - 1;
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
+
+                                        LatLng intialGPS = new LatLng(latitude,longitude);
+                                        Log.d("LatLng",intialGPS.Lng + " " +intialGPS.Lat+"");
 
                                         AddressText.setText("Latitude: "+ latitude + "\n" + "Longitude: "+ longitude);
                                     }
