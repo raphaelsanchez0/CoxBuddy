@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView AddressText;
     private Button LocationButton;
     private LocationRequest locationRequest;
+    private LatLng currentLocation;
+    private LatLng previousLocation;
 
 
     @Override
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 getCurrentLocation();
+
             }
         });
 
@@ -99,8 +103,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getCurrentLocation() {
-
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -121,8 +123,9 @@ public class MainActivity extends AppCompatActivity {
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
-                                        LatLng intialGPS = new LatLng(latitude,longitude);
-                                        Log.d("LatLng",intialGPS.Lng + " " +intialGPS.Lat+"");
+                                        //coordinates = new LatLng(latitude,longitude);
+
+                                        currentLocation = new LatLng(latitude,longitude);
 
                                         AddressText.setText("Latitude: "+ latitude + "\n" + "Longitude: "+ longitude);
                                     }
