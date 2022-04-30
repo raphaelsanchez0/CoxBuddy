@@ -7,6 +7,14 @@ public class LatLng {
         Lat = a;
         Lng = b;
     }
+    public double getLat(){
+        return Lat;
+    }
+
+    public double getLng(){
+        return Lng;
+    }
+
 }
 
 

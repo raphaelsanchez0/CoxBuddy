@@ -55,11 +55,14 @@ public class MainActivity extends AppCompatActivity {
     private Button startStopButton;
 
     private LocationRequest locationRequest;
-    //private LatLng currentLocation;
-    //private LatLng previousLocation;
 
-    private ArrayList<Object> currentLocation = new ArrayList<Object>();
-    private ArrayList<Object> previousLocation = new ArrayList<Object>();
+    //public ArrayList<Object> currentLocation = new ArrayList<Object>();
+    //public ArrayList<Object> previousLocation = new ArrayList<Object>();
+    private Object[] currentLocation = {null,null,null}; //lat,lng,time
+    private Object[] previousLocation = {null,null,null};//lat,lng,time
+    final int latIndex = 0;
+    final int lngIndex = 1;
+    final int timeIndex = 2;
 
 
     private final int milliseconds = 1000;
@@ -86,10 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
         periodicLocationHandler = new Handler();
 
-        currentLocation.add(null);
-        currentLocation.add(null);
-        previousLocation.add(null);
-        previousLocation.add(null);
 
 
         LocationButton.setOnClickListener(new View.OnClickListener() {
@@ -103,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                // Do something here on the main thread
-                Log.d("curTime", currentLocation.get(1)+"");
-                //previousLocation = currentLocation;
                 getCurrentLocation();
+                previousLocation = currentLocation;
+
+                Log.d("LocationTester","Current Locaton: " + currentLocation[0]+","+currentLocation[1] +"Previous Location: "+previousLocation[0]+","+previousLocation[1]);
 
 
 
@@ -180,12 +179,21 @@ public class MainActivity extends AppCompatActivity {
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
-                                        //coordinates = new LatLng(latitude,longitude);
-                                        currentLocation.set(0,new LatLng(latitude,longitude));
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-                                        currentLocation.set(1,currentTime);
+
+                                        currentLocation[0] = latitude;
+                                        currentLocation[1] = longitude;
+                                        currentLocation[2] = currentTime;
+
+                                        //currentLocation = {latitude,longitude,currentTime};
+//                                        //coordinates = new LatLng(latitude,longitude);
+//                                        currentLocation[0] = new LatLng(latitude,longitude);
+//
+//                                        currentLocation[1] = currentTime;
                                         //Log.d("time",currentLocation.get(1)+"");
-                                        AddressText.setText("Latitude: "+ latitude + "\n" + "Longitude: "+ longitude);
+
+                                        //currentLocation
+                                        AddressText.setText("Latitude: "+ currentLocation[0] + "\n" + "Longitude: "+ currentLocation[0]);
                                     }
                                 }
                             }, Looper.getMainLooper());
