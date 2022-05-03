@@ -11,15 +11,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import com.example.coxbuddy.R;
 import com.google.android.gms.common.api.ApiException;
@@ -34,11 +41,36 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView AddressText;
     private Button LocationButton;
+
+    private Button startStopButton;
+
     private LocationRequest locationRequest;
+
+    //public ArrayList<Object> currentLocation = new ArrayList<Object>();
+    //public ArrayList<Object> previousLocation = new ArrayList<Object>();
+    //private Object[] currentLocation = {null,null,null}; //lat,lng,time
+    //private Object[] previousLocation = {null,null,null};//lat,lng,time
+    private ArrayList<LatLng> locationLog = new ArrayList<>();
+    final int latIndex = 0;
+    final int lngIndex = 1;
+    final int timeIndex = 2;
+
+
+    private final int milliseconds = 1000;
+    private Handler periodicLocationHandler;
+    private final int locationRefreshDelay = 5;
+
+
 
 
     @Override
@@ -48,22 +80,51 @@ public class MainActivity extends AppCompatActivity {
 
         AddressText = findViewById(R.id.addressText);
         LocationButton = findViewById(R.id.locationButton);
+        startStopButton = findViewById(R.id.start_stop_button);
+
 
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(5000);
         locationRequest.setFastestInterval(2000);
 
+        periodicLocationHandler = new Handler();
+
+
+
         LocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getCurrentLocation();
+
+            }
+        });
+        Runnable runnableCode = new Runnable() {
+            @Override
+            public void run() {
 
                 getCurrentLocation();
+                //previousLocation = currentLocation;
+
+                //Log.d("LocationTester","Current Locaton: " + currentLocation[0]+","+currentLocation[1] +"Previous Location: "+previousLocation[0]+","+previousLocation[1]);
+                Log.d("locationlog", locationLog+"");
+
+
+                periodicLocationHandler.postDelayed(this, locationRefreshDelay*milliseconds);
             }
+        };
+
+        startStopButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                periodicLocationHandler.post(runnableCode);
+            };
+
         });
 
 
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -98,9 +159,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getCurrentLocation() {
-
-
+    public void getCurrentLocation() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -121,7 +180,23 @@ public class MainActivity extends AppCompatActivity {
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
-                                        AddressText.setText("Latitude: "+ latitude + "\n" + "Longitude: "+ longitude);
+                                        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+
+                                        locationLog.add(new LatLng(latitude,longitude,currentTime));
+                                        Log.d("locationlog", locationLog+"");
+//                                        currentLocation[0] = latitude;
+//                                        currentLocation[1] = longitude;
+//                                        currentLocation[2] = currentTime;
+
+                                        //currentLocation = {latitude,longitude,currentTime};
+//                                        //coordinates = new LatLng(latitude,longitude);
+//                                        currentLocation[0] = new LatLng(latitude,longitude);
+//
+//                                        currentLocation[1] = currentTime;
+                                        //Log.d("time",currentLocation.get(1)+"");
+
+                                        //currentLocation
+                                        AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
                                     }
                                 }
                             }, Looper.getMainLooper());
