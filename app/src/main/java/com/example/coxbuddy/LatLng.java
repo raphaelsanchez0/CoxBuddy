@@ -1,11 +1,13 @@
 package com.example.coxbuddy;
 
 public class LatLng {
-    Double Lat;
-    Double Lng;
-    public LatLng(double a, double b){
-        Lat = a;
-        Lng = b;
+    double Lat;
+    double Lng;
+    String time;
+    public LatLng(double Lat, double Lng, String time){
+        this.Lat = Lat;
+        this.Lng = Lng;
+        this.time = time;
     }
     public double getLat(){
         return Lat;
@@ -13,6 +15,11 @@ public class LatLng {
 
     public double getLng(){
         return Lng;
+
+    }
+
+    public String toString(){
+        return ""+Lat+","+Lng+","+time;
     }
 
 }
