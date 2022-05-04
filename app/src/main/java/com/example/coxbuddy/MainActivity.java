@@ -50,25 +50,23 @@ import java.util.TimeZone;
 public class MainActivity extends AppCompatActivity {
 
     private TextView AddressText;
-    private Button LocationButton;
+
 
     private Button startStopButton;
+    private TextView splitText;
 
     private LocationRequest locationRequest;
 
-    //public ArrayList<Object> currentLocation = new ArrayList<Object>();
-    //public ArrayList<Object> previousLocation = new ArrayList<Object>();
-    //private Object[] currentLocation = {null,null,null}; //lat,lng,time
-    //private Object[] previousLocation = {null,null,null};//lat,lng,time
+    //arraylist to log all users locations
     private ArrayList<LatLng> locationLog = new ArrayList<>();
-    final int latIndex = 0;
-    final int lngIndex = 1;
-    final int timeIndex = 2;
+
 
 
     private final int milliseconds = 1000;
     private Handler periodicLocationHandler;
     private final int locationRefreshDelay = 5;
+
+    private int loopCounter = 0;
 
 
 
@@ -79,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         AddressText = findViewById(R.id.addressText);
-        LocationButton = findViewById(R.id.locationButton);
+        splitText = findViewById(R.id.split_text);
+
         startStopButton = findViewById(R.id.start_stop_button);
 
 
@@ -91,26 +90,38 @@ public class MainActivity extends AppCompatActivity {
         periodicLocationHandler = new Handler();
 
 
-
-        LocationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getCurrentLocation();
-
-            }
-        });
         Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-
+                //Do this every locationRefreshDelaySecond
                 getCurrentLocation();
-                //previousLocation = currentLocation;
+                if(loopCounter > 3){
+                    double Lat1 = locationLog.get(locationLog.size()-2).getLat();
+                    double lng1 = locationLog.get(locationLog.size()-2).getLng();
+                    double lat2 = locationLog.get(locationLog.size()-1).getLat();
+                    double lng2 = locationLog.get(locationLog.size()-1).getLng();
+                    double split = splitCalcualtor.getSplit(Lat1,lng1,lat2,lng2, 2);
+                    splitText.setText(split+"");
+                }
 
-                //Log.d("LocationTester","Current Locaton: " + currentLocation[0]+","+currentLocation[1] +"Previous Location: "+previousLocation[0]+","+previousLocation[1]);
+
+
+
+//locationLog.get(locationLog.size()-2).getTimeAsTotalInSeconds()-locationLog.get(locationLog.size()-1).getTimeAsTotalInSeconds()
+
+
+
+
+
+
+                //AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
                 Log.d("locationlog", locationLog+"");
+                //Log.d()
 
 
                 periodicLocationHandler.postDelayed(this, locationRefreshDelay*milliseconds);
+
+                loopCounter++;
             }
         };
 
@@ -118,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 periodicLocationHandler.post(runnableCode);
-            };
+            }
 
         });
 
@@ -196,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                                         //Log.d("time",currentLocation.get(1)+"");
 
                                         //currentLocation
-                                        AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
+
                                     }
                                 }
                             }, Looper.getMainLooper());
