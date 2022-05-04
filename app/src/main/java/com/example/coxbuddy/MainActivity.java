@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final int milliseconds = 1000;
     private Handler periodicLocationHandler;
-    private final int locationRefreshDelay = 5;
+    private final int locationRefreshDelay = 10;
 
     private int loopCounter = 0;
 
@@ -95,12 +95,15 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 //Do this every locationRefreshDelaySecond
                 getCurrentLocation();
-                if(loopCounter > 3){
+                if(loopCounter > 2){
                     double Lat1 = locationLog.get(locationLog.size()-2).getLat();
                     double lng1 = locationLog.get(locationLog.size()-2).getLng();
                     double lat2 = locationLog.get(locationLog.size()-1).getLat();
                     double lng2 = locationLog.get(locationLog.size()-1).getLng();
-                    double split = splitCalcualtor.getSplit(Lat1,lng1,lat2,lng2, 2);
+                    double split = splitCalcualtor.getSplit(Lat1,lng1,lat2,lng2, 10);
+
+                    Log.d("LocationGrabber",split+"");
+
                     splitText.setText(split+"");
                 }
 
@@ -115,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 //AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
-                Log.d("locationlog", locationLog+"");
+                //Log.d("locationlog", locationLog+"");
                 //Log.d()
 
 
@@ -194,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
-                                        Log.d("locationlog", locationLog+"");
+                                        //Log.d("locationlog", locationLog+"");
 //                                        currentLocation[0] = latitude;
 //                                        currentLocation[1] = longitude;
 //                                        currentLocation[2] = currentTime;
