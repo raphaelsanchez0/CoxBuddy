@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,11 +23,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
-import com.example.coxbuddy.R;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationCallback;
@@ -45,7 +41,6 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -100,11 +95,11 @@ public class MainActivity extends AppCompatActivity {
                     double lng1 = locationLog.get(locationLog.size()-2).getLng();
                     double lat2 = locationLog.get(locationLog.size()-1).getLat();
                     double lng2 = locationLog.get(locationLog.size()-1).getLng();
-                    double split = splitCalcualtor.getSplit(Lat1,lng1,lat2,lng2, 10);
+                    double split = SplitCalcualtor.getSplit(Lat1,lng1,lat2,lng2, 10);
 
                     Log.d("LocationGrabber",split+"");
 
-                    splitText.setText(split+"");
+                    splitText.setText(SplitCalcualtor.FormatToSplitString(split));
                 }
 
 
