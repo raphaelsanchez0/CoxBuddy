@@ -16,7 +16,7 @@ public class SplitCalcualtor {
     public static String FormatToSplitString(double splitInSeconds){
         int splitInSecondsInt = (int)Math.round(splitInSeconds);
         int minutes = splitInSecondsInt/60;
-        int seconds = minutes % 60;
+        int seconds = splitInSecondsInt % 60;
         return minutes + ":"+seconds;
     }
 }
