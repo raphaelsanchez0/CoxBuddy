@@ -3,6 +3,7 @@ package com.example.coxbuddy;
 import android.util.Log;
 
 public class getDistanceFromCordinates {
+    //lat/lng 1 is first cordinate lat/lng 2 is second cordinate
     public static Double gpsDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
         final int R = 6371;
         Double latDistance = toRad(lat2-lat1);

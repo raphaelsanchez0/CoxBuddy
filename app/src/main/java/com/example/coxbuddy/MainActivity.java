@@ -49,11 +49,14 @@ public class MainActivity extends AppCompatActivity {
 
     private Button startStopButton;
     private TextView splitText;
+    private TextView totalDistanceTraveledText;
 
     private LocationRequest locationRequest;
 
     //arraylist to log all users locations
     private ArrayList<LatLng> locationLog = new ArrayList<>();
+
+    private int totalDistanceTraveled = 0;
 
 
     private final int locationRefreshDelay = 5;
@@ -70,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         AddressText = findViewById(R.id.addressText);
         splitText = findViewById(R.id.split_text);
+        totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
 
         startStopButton = findViewById(R.id.start_stop_button);
 
@@ -97,13 +101,6 @@ public class MainActivity extends AppCompatActivity {
                 //AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
                 //Log.d("locationlog", locationLog+"");
                 //Log.d()
-
-
-
-
-
-
-
     }
 
 
@@ -140,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void getCurrentLocation() {
+    private void getCurrentLocation() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -166,32 +163,24 @@ public class MainActivity extends AppCompatActivity {
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
                                         Log.d("locationlog", locationLog+"");
                                         if (locationLog.size()>=2) {
-                                            double Lat1 = locationLog.get(locationLog.size() - 2).getLat();
+                                            double lat1 = locationLog.get(locationLog.size() - 2).getLat();
                                             double lng1 = locationLog.get(locationLog.size() - 2).getLng();
                                             double lat2 = locationLog.get(locationLog.size() - 1).getLat();
                                             double lng2 = locationLog.get(locationLog.size() - 1).getLng();
                                             int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
                                             int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
                                             int totalTimeDiff = totalTime2 - totalTime1;
-                                            double split = SplitCalcualtor.getSplit(Lat1, lng1, lat2, lng2, totalTimeDiff);
+                                            double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
+
+
+                                            totalDistanceTraveled+=getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
 
                                             Log.d("LocationGrabber", split + "");
-                                            Log.d("timeDiff",totalTimeDiff+"");
+                                            Log.d("totalDistanceTraveled",totalDistanceTraveled+"");
                                             splitText.setText(SplitCalcualtor.FormatToSplitString(split));
+                                            totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
                                         }
 
-//                                        currentLocation[0] = latitude;
-//                                        currentLocation[1] = longitude;
-//                                        currentLocation[2] = currentTime;
-
-                                        //currentLocation = {latitude,longitude,currentTime};
-//                                        //coordinates = new LatLng(latitude,longitude);
-//                                        currentLocation[0] = new LatLng(latitude,longitude);
-//
-//                                        currentLocation[1] = currentTime;
-                                        //Log.d("time",currentLocation.get(1)+"");
-
-                                        //currentLocation
 
                                     }
                                 }
