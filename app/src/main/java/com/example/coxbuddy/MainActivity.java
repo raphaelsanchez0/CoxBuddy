@@ -56,9 +56,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<LatLng> locationLog = new ArrayList<>();
 
 
-
-    private final int milliseconds = 1000;
-    private Handler periodicLocationHandler;
     private final int locationRefreshDelay = 5;
 
     private int loopCounter = 0;
@@ -82,29 +79,24 @@ public class MainActivity extends AppCompatActivity {
         locationRequest.setInterval(8000);
         locationRequest.setFastestInterval(locationRefreshDelay*1000);
 
-        periodicLocationHandler = new Handler();
 
 
-        Runnable runnableCode = new Runnable() {
-            @Override
-            public void run() {
-                //Do this every locationRefreshDelaySecond
-                getCurrentLocation();
-                if(loopCounter > 2){
-                    double Lat1 = locationLog.get(locationLog.size()-2).getLat();
-                    double lng1 = locationLog.get(locationLog.size()-2).getLng();
-                    double lat2 = locationLog.get(locationLog.size()-1).getLat();
-                    double lng2 = locationLog.get(locationLog.size()-1).getLng();
-                    int totalTime1 = locationLog.get(locationLog.size()-2).getTimeAsTotalInSeconds();
-                    int totalTime2 =locationLog.get(locationLog.size()-1).getTimeAsTotalInSeconds();
-                    int totalTimeDiff = totalTime2-totalTime1;
-                    double split = SplitCalcualtor.getSplit(Lat1,lng1,lat2,lng2, totalTimeDiff);
-
-                    Log.d("LocationGrabber",split+"");
-                    splitText.setText(SplitCalcualtor.FormatToSplitString(split));
-                }
 
 
+        getCurrentLocation();
+        if (loopCounter >=2) {
+            double Lat1 = locationLog.get(locationLog.size() - 2).getLat();
+            double lng1 = locationLog.get(locationLog.size() - 2).getLng();
+            double lat2 = locationLog.get(locationLog.size() - 1).getLat();
+            double lng2 = locationLog.get(locationLog.size() - 1).getLng();
+            int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
+            int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
+            int totalTimeDiff = totalTime2 - totalTime1;
+            double split = SplitCalcualtor.getSplit(Lat1, lng1, lat2, lng2, totalTimeDiff);
+
+            Log.d("LocationGrabber", split + "");
+            splitText.setText(SplitCalcualtor.FormatToSplitString(split));
+        }
 
 
 //locationLog.get(locationLog.size()-2).getTimeAsTotalInSeconds()-locationLog.get(locationLog.size()-1).getTimeAsTotalInSeconds()
@@ -119,19 +111,9 @@ public class MainActivity extends AppCompatActivity {
                 //Log.d()
 
 
-                periodicLocationHandler.postDelayed(this, locationRefreshDelay*milliseconds);
 
-                loopCounter++;
-            }
-        };
 
-        startStopButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                periodicLocationHandler.post(runnableCode);
-            }
 
-        });
 
 
     }
@@ -195,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
 
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
                                         Log.d("locationlog", locationLog+"");
+                                        loopCounter++;
 //                                        currentLocation[0] = latitude;
 //                                        currentLocation[1] = longitude;
 //                                        currentLocation[2] = currentTime;
