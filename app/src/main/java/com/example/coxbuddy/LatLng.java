@@ -18,10 +18,21 @@ public class LatLng {
 
     }
 
+    public String getTimeStamp(){
+        return time;
+    }
+//HH:mm:ss
     public String toString(){
         return ""+Lat+","+Lng+","+time;
     }
 
+    public int getTimeAsTotalInSeconds(){
+        int hours = Integer.parseInt(time.substring(0,2));
+        int minutes = Integer.parseInt(time.substring(3,5));
+        int seconds = Integer.parseInt(time.substring(6,8));
+        return hours*3600 + minutes*60 + seconds;
+
+    }
 }
 
 

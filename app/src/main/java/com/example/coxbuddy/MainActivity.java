@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,11 +23,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
-import com.example.coxbuddy.R;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationCallback;
@@ -45,30 +41,24 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView AddressText;
-    private Button LocationButton;
+
 
     private Button startStopButton;
+    private TextView splitText;
 
     private LocationRequest locationRequest;
 
-    //public ArrayList<Object> currentLocation = new ArrayList<Object>();
-    //public ArrayList<Object> previousLocation = new ArrayList<Object>();
-    //private Object[] currentLocation = {null,null,null}; //lat,lng,time
-    //private Object[] previousLocation = {null,null,null};//lat,lng,time
+    //arraylist to log all users locations
     private ArrayList<LatLng> locationLog = new ArrayList<>();
-    final int latIndex = 0;
-    final int lngIndex = 1;
-    final int timeIndex = 2;
 
 
-    private final int milliseconds = 1000;
-    private Handler periodicLocationHandler;
     private final int locationRefreshDelay = 5;
+
+
 
 
 
@@ -79,48 +69,39 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         AddressText = findViewById(R.id.addressText);
-        LocationButton = findViewById(R.id.locationButton);
+        splitText = findViewById(R.id.split_text);
+
         startStopButton = findViewById(R.id.start_stop_button);
 
 
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(5000);
-        locationRequest.setFastestInterval(2000);
-
-        periodicLocationHandler = new Handler();
+        locationRequest.setInterval(8000);
+        locationRequest.setFastestInterval(locationRefreshDelay*1000);
 
 
 
-        LocationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getCurrentLocation();
-
-            }
-        });
-        Runnable runnableCode = new Runnable() {
-            @Override
-            public void run() {
-
-                getCurrentLocation();
-                //previousLocation = currentLocation;
-
-                //Log.d("LocationTester","Current Locaton: " + currentLocation[0]+","+currentLocation[1] +"Previous Location: "+previousLocation[0]+","+previousLocation[1]);
-                Log.d("locationlog", locationLog+"");
 
 
-                periodicLocationHandler.postDelayed(this, locationRefreshDelay*milliseconds);
-            }
-        };
+        getCurrentLocation();
 
-        startStopButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                periodicLocationHandler.post(runnableCode);
-            };
 
-        });
+
+//locationLog.get(locationLog.size()-2).getTimeAsTotalInSeconds()-locationLog.get(locationLog.size()-1).getTimeAsTotalInSeconds()
+
+
+
+
+
+
+                //AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
+                //Log.d("locationlog", locationLog+"");
+                //Log.d()
+
+
+
+
+
 
 
     }
@@ -171,8 +152,8 @@ public class MainActivity extends AppCompatActivity {
                                 public void onLocationResult(@NonNull LocationResult locationResult) {
                                     super.onLocationResult(locationResult);
 
-                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
-                                            .removeLocationUpdates(this);
+                                    //LocationServices.getFusedLocationProviderClient(MainActivity.this)
+                                            //.removeLocationUpdates(this);
 
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
@@ -184,6 +165,21 @@ public class MainActivity extends AppCompatActivity {
 
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
                                         Log.d("locationlog", locationLog+"");
+                                        if (locationLog.size()>=2) {
+                                            double Lat1 = locationLog.get(locationLog.size() - 2).getLat();
+                                            double lng1 = locationLog.get(locationLog.size() - 2).getLng();
+                                            double lat2 = locationLog.get(locationLog.size() - 1).getLat();
+                                            double lng2 = locationLog.get(locationLog.size() - 1).getLng();
+                                            int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
+                                            int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
+                                            int totalTimeDiff = totalTime2 - totalTime1;
+                                            double split = SplitCalcualtor.getSplit(Lat1, lng1, lat2, lng2, totalTimeDiff);
+
+                                            Log.d("LocationGrabber", split + "");
+                                            Log.d("timeDiff",totalTimeDiff+"");
+                                            splitText.setText(SplitCalcualtor.FormatToSplitString(split));
+                                        }
+
 //                                        currentLocation[0] = latitude;
 //                                        currentLocation[1] = longitude;
 //                                        currentLocation[2] = currentTime;
@@ -196,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
                                         //Log.d("time",currentLocation.get(1)+"");
 
                                         //currentLocation
-                                        AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
+
                                     }
                                 }
                             }, Looper.getMainLooper());
