@@ -1,5 +1,7 @@
 package com.example.coxbuddy;
 
+import android.util.Log;
+
 public class getDistanceFromCordinates {
     public static Double gpsDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
         final int R = 6371;
@@ -10,6 +12,8 @@ public class getDistanceFromCordinates {
                         Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         Double distance = R * c*1000;
+        Log.d("distance", distance +"");
+
         return distance;
     }
 
