@@ -15,7 +15,6 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 
-import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
@@ -53,15 +52,12 @@ public class MainActivity extends AppCompatActivity {
 
     private LocationRequest locationRequest;
 
-    //arraylist to log all users locations
     private ArrayList<LatLng> locationLog = new ArrayList<>();
-
     private int totalDistanceTraveled = 0;
-
 
     private final int locationRefreshDelay = 5;
 
-
+    private boolean trackingToggled = false;
 
 
 
@@ -70,37 +66,39 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //assigns button variables IDs
         AddressText = findViewById(R.id.addressText);
         splitText = findViewById(R.id.split_text);
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
-
         startStopButton = findViewById(R.id.start_stop_button);
 
-
-        locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(8000);
-        locationRequest.setFastestInterval(locationRefreshDelay*1000);
-
-
+        //creates location request objeccts and sets values to them.
+        locationRequest = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(8000)
+            .setFastestInterval(locationRefreshDelay*1000);
 
 
+        startStopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("buttonTest","tttt");
+                if(startStopButton.getText().equals("Start")){
+                    startStopButton.setText("Stop");
+                    trackingToggled = true;
+                }else if(startStopButton.getText().equals("Stop")){
+                    startStopButton.setText("Start");
+                    trackingToggled = false;
+                }
+            }
+        });
 
+
+        //runs central location function
         getCurrentLocation();
 
 
 
-//locationLog.get(locationLog.size()-2).getTimeAsTotalInSeconds()-locationLog.get(locationLog.size()-1).getTimeAsTotalInSeconds()
-
-
-
-
-
-
-                //AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
-                //Log.d("locationlog", locationLog+"");
-                //Log.d()
     }
 
 
