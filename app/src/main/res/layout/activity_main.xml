@@ -120,7 +120,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
-        android:id="@+id/addressText"
+        android:id="@+id/status_Text"
         android:layout_width="402dp"
         android:layout_height="143dp"
         android:text="null"

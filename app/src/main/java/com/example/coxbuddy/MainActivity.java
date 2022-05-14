@@ -43,7 +43,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView AddressText;
+    private TextView statusText;
 
 
     private Button startStopButton;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //assigns button variables IDs
-        AddressText = findViewById(R.id.addressText);
+        statusText = findViewById(R.id.status_Text);
         splitText = findViewById(R.id.split_text);
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
         startStopButton = findViewById(R.id.start_stop_button);
@@ -86,9 +86,13 @@ public class MainActivity extends AppCompatActivity {
                 if(startStopButton.getText().equals("Start")){
                     startStopButton.setText("Stop");
                     trackingToggled = true;
+                    //turn on tracking
+                    startLocationUpdates();
                 }else if(startStopButton.getText().equals("Stop")){
                     startStopButton.setText("Start");
                     trackingToggled = false;
+                    //turn off tracking
+                    stopLocationUpdates();
                 }
             }
         });
@@ -99,6 +103,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    }
+
+    private void startLocationUpdates() {
+        statusText.setText("Location is being tracked");
+    }
+    private void stopLocationUpdates(){
+        statusText.setText("Location is being tracked");
     }
 
 
