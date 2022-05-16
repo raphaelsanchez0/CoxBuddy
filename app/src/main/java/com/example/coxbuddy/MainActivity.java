@@ -86,20 +86,26 @@ public class MainActivity extends AppCompatActivity {
                 if(startStopButton.getText().equals("Start")){
                     startStopButton.setText("Stop");
                     trackingToggled = true;
-                    //turn on tracking
                     startLocationUpdates();
+                    getCurrentLocation();
+
+                    //turn on tracking
+
+
                 }else if(startStopButton.getText().equals("Stop")){
                     startStopButton.setText("Start");
                     trackingToggled = false;
-                    //turn off tracking
+
                     stopLocationUpdates();
+
                 }
+                Log.d("onOrOff",trackingToggled+"");
             }
         });
 
 
         //runs central location function
-        getCurrentLocation();
+        //getCurrentLocation();
 
 
 
@@ -109,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         statusText.setText("Location is being tracked");
     }
     private void stopLocationUpdates(){
-        statusText.setText("Location is being tracked");
+        statusText.setText("Location is not being tracked");
     }
 
 
@@ -167,29 +173,36 @@ public class MainActivity extends AppCompatActivity {
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
+                                        Log.d("onOrOff",trackingToggled+"");
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
-                                        Log.d("locationlog", locationLog+"");
-                                        if (locationLog.size()>=2) {
-                                            double lat1 = locationLog.get(locationLog.size() - 2).getLat();
-                                            double lng1 = locationLog.get(locationLog.size() - 2).getLng();
-                                            double lat2 = locationLog.get(locationLog.size() - 1).getLat();
-                                            double lng2 = locationLog.get(locationLog.size() - 1).getLng();
-                                            int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
-                                            int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
-                                            int totalTimeDiff = totalTime2 - totalTime1;
-                                            double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
+
+                                            if (locationLog.size()>=2 ) {
+                                                double lat1 = locationLog.get(locationLog.size() - 2).getLat();
+                                                double lng1 = locationLog.get(locationLog.size() - 2).getLng();
+                                                double lat2 = locationLog.get(locationLog.size() - 1).getLat();
+                                                double lng2 = locationLog.get(locationLog.size() - 1).getLng();
+                                                int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
+                                                int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
+                                                int totalTimeDiff = totalTime2 - totalTime1;
+                                                double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
 
 
-                                            totalDistanceTraveled+=getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
 
-                                            Log.d("LocationGrabber", split + "");
-                                            Log.d("totalDistanceTraveled",totalDistanceTraveled+"");
-                                            splitText.setText(SplitCalcualtor.FormatToSplitString(split));
-                                            totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
-                                        }
+                                                Log.d("LocationGrabber", split + "");
+                                                Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
+                                                Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
+                                                
+                                                splitText.setText(SplitCalcualtor.FormatToSplitString(split));
+                                                totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
+                                                if(trackingToggled == false){
+                                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
+                                                    .removeLocationUpdates(this);
 
+                                                }
+                                            }
 
                                     }
                                 }
