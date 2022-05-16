@@ -17,6 +17,11 @@ public class SplitCalcualtor {
         int splitInSecondsInt = (int)Math.round(splitInSeconds);
         int minutes = splitInSecondsInt/60;
         int seconds = splitInSecondsInt % 60;
-        return minutes + ":"+seconds;
+        if(seconds<10){
+            return minutes + ":"+seconds+"0";
+        }else{
+            return minutes + ":"+seconds;
+        }
+
     }
 }

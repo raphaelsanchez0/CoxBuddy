@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import android.Manifest;
 import android.app.Activity;
@@ -11,11 +12,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 
-import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
@@ -44,22 +45,25 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView AddressText;
+    private TextView statusText;
 
 
     private Button startStopButton;
+    private Button resetButton;
     private TextView splitText;
     private TextView totalDistanceTraveledText;
 
     private LocationRequest locationRequest;
 
-    //arraylist to log all users locations
     private ArrayList<LatLng> locationLog = new ArrayList<>();
-
     private int totalDistanceTraveled = 0;
 
-
     private final int locationRefreshDelay = 5;
+
+    private boolean trackingToggled = false;
+    private int locationLogLenAtPause;
+
+
 
 
 
@@ -70,37 +74,75 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        AddressText = findViewById(R.id.addressText);
+        //assigns button variables IDs
+        statusText = findViewById(R.id.status_Text);
         splitText = findViewById(R.id.split_text);
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
 
         startStopButton = findViewById(R.id.start_stop_button);
-
-
-        locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(8000);
-        locationRequest.setFastestInterval(locationRefreshDelay*1000);
+        resetButton = findViewById(R.id.reset_button);
 
 
 
+        //creates location request objeccts and sets values to them.
+        locationRequest = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(8000)
+            .setFastestInterval(locationRefreshDelay*1000);
 
 
-        getCurrentLocation();
+        resetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                totalDistanceTraveled = 0;
+                totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
+
+            }
+        });
+
+        startStopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(startStopButton.getText().equals("Start")){
+                    startStopButton.setText("Stop");
+
+                    startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
+
+
+                    trackingToggled = true;
+                    startLocationUpdates();
+                    getCurrentLocation();
+                    locationLogLenAtPause = locationLog.size();
+
+                    //turn on tracking
+
+
+                }else if(startStopButton.getText().equals("Stop")){
+                    startStopButton.setText("Start");
+                    trackingToggled = false;
+                    startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
+
+                    stopLocationUpdates();
+
+                }
+                Log.d("onOrOff",trackingToggled+"");
+            }
+        });
+
+
+        //runs central location function
+        //getCurrentLocation();
 
 
 
-//locationLog.get(locationLog.size()-2).getTimeAsTotalInSeconds()-locationLog.get(locationLog.size()-1).getTimeAsTotalInSeconds()
+    }
 
-
-
-
-
-
-                //AddressText.setText("Latitude: "+ locationLog.get(locationLog.size()-1).getLat() + "\n" + "Longitude: "+ locationLog.get(locationLog.size()-1).getLng());
-                //Log.d("locationlog", locationLog+"");
-                //Log.d()
+    private void startLocationUpdates() {
+        statusText.setText("Location is being tracked");
+    }
+    private void stopLocationUpdates(){
+        statusText.setText("Location is not being tracked");
     }
 
 
@@ -154,33 +196,41 @@ public class MainActivity extends AppCompatActivity {
 
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
+
                                         int index = locationResult.getLocations().size() - 1;
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
+                                        Log.d("onOrOff",trackingToggled+"");
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
-                                        Log.d("locationlog", locationLog+"");
-                                        if (locationLog.size()>=2) {
-                                            double lat1 = locationLog.get(locationLog.size() - 2).getLat();
-                                            double lng1 = locationLog.get(locationLog.size() - 2).getLng();
-                                            double lat2 = locationLog.get(locationLog.size() - 1).getLat();
-                                            double lng2 = locationLog.get(locationLog.size() - 1).getLng();
-                                            int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
-                                            int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
-                                            int totalTimeDiff = totalTime2 - totalTime1;
-                                            double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
 
+                                            if (locationLog.size()-2>=locationLogLenAtPause) {
+                                                double lat1 = locationLog.get(locationLog.size() - 2).getLat();
+                                                double lng1 = locationLog.get(locationLog.size() - 2).getLng();
+                                                double lat2 = locationLog.get(locationLog.size() - 1).getLat();
+                                                double lng2 = locationLog.get(locationLog.size() - 1).getLng();
+                                                int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
+                                                int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
+                                                int totalTimeDiff = totalTime2 - totalTime1;
+                                                double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
 
-                                            totalDistanceTraveled+=getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                if (trackingToggled == true) {
+                                                    totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                }
+                                                Log.d("LocationGrabber", split + "");
+                                                Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
+                                                Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
+                                                
+                                                splitText.setText(SplitCalcualtor.FormatToSplitString(split));
+                                                totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
+                                                if(trackingToggled == false){
+                                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
+                                                    .removeLocationUpdates(this);
 
-                                            Log.d("LocationGrabber", split + "");
-                                            Log.d("totalDistanceTraveled",totalDistanceTraveled+"");
-                                            splitText.setText(SplitCalcualtor.FormatToSplitString(split));
-                                            totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
-                                        }
-
+                                                }
+                                            }
 
                                     }
                                 }
