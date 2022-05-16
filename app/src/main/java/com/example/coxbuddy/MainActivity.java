@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private Button startStopButton;
+    private Button resetButton;
     private TextView splitText;
     private TextView totalDistanceTraveledText;
 
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean trackingToggled = false;
     private int locationLogLenAtPause;
 
-    private Drawable startStopButtonColorStatus;
+
 
 
 
@@ -77,7 +78,10 @@ public class MainActivity extends AppCompatActivity {
         statusText = findViewById(R.id.status_Text);
         splitText = findViewById(R.id.split_text);
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
+
         startStopButton = findViewById(R.id.start_stop_button);
+        resetButton = findViewById(R.id.reset_button);
+
 
 
         //creates location request objeccts and sets values to them.
@@ -87,11 +91,19 @@ public class MainActivity extends AppCompatActivity {
             .setFastestInterval(locationRefreshDelay*1000);
 
 
+        resetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                totalDistanceTraveled = 0;
+                totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
+
+            }
+        });
 
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("buttonTest","tttt");
+
                 if(startStopButton.getText().equals("Start")){
                     startStopButton.setText("Stop");
 
