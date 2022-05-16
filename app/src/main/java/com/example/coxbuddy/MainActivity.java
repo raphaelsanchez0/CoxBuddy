@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
                     getCurrentLocation();
                     locationLogLenAtPause = locationLog.size();
 
+                    resetButton.setEnabled(false);
+
                     if (lastPause != 0){
                         chronometer.setBase(chronometer.getBase()+SystemClock.elapsedRealtime()-lastPause);
                     }
@@ -147,11 +149,10 @@ public class MainActivity extends AppCompatActivity {
                     trackingToggled = false;
                     chronoRunning = false;
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
-
                     lastPause = SystemClock.elapsedRealtime();
                     chronometer.stop();
-
                     stopLocationUpdates();
+                    resetButton.setEnabled(true);
 
                 }
                 Log.d("onOrOff",trackingToggled+"");
