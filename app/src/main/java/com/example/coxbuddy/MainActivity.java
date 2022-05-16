@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import android.Manifest;
 import android.app.Activity;
@@ -11,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -58,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
     private final int locationRefreshDelay = 5;
 
     private boolean trackingToggled = false;
+    private int locationLogLenAtPause;
+
+    private Drawable startStopButtonColorStatus;
+
+
 
 
 
@@ -72,11 +79,13 @@ public class MainActivity extends AppCompatActivity {
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
         startStopButton = findViewById(R.id.start_stop_button);
 
+
         //creates location request objeccts and sets values to them.
         locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(8000)
             .setFastestInterval(locationRefreshDelay*1000);
+
 
 
         startStopButton.setOnClickListener(new View.OnClickListener() {
@@ -85,9 +94,14 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("buttonTest","tttt");
                 if(startStopButton.getText().equals("Start")){
                     startStopButton.setText("Stop");
+
+                    startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
+
+
                     trackingToggled = true;
                     startLocationUpdates();
                     getCurrentLocation();
+                    locationLogLenAtPause = locationLog.size();
 
                     //turn on tracking
 
@@ -95,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 }else if(startStopButton.getText().equals("Stop")){
                     startStopButton.setText("Start");
                     trackingToggled = false;
+                    startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
 
                     stopLocationUpdates();
 
@@ -169,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
+
                                         int index = locationResult.getLocations().size() - 1;
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
@@ -178,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
 
-                                            if (locationLog.size()>=2 ) {
+                                            if (locationLog.size()-2>=locationLogLenAtPause) {
                                                 double lat1 = locationLog.get(locationLog.size() - 2).getLat();
                                                 double lng1 = locationLog.get(locationLog.size() - 2).getLng();
                                                 double lat2 = locationLog.get(locationLog.size() - 1).getLat();
@@ -188,9 +204,9 @@ public class MainActivity extends AppCompatActivity {
                                                 int totalTimeDiff = totalTime2 - totalTime1;
                                                 double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
 
-
-                                                totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
-
+                                                if (trackingToggled == true) {
+                                                    totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                }
                                                 Log.d("LocationGrabber", split + "");
                                                 Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
                                                 Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
