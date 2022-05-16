@@ -88,6 +88,7 @@
             app:layout_constraintTop_toBottomOf="@+id/space7" />
 
         <Space
+            android:id="@+id/space10"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -119,7 +120,7 @@
             android:id="@+id/split_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Split"
+            android:text="@string/split_res"
             android:textSize="40sp"
             app:layout_constraintBottom_toTopOf="@+id/split_text"
             app:layout_constraintEnd_toStartOf="@+id/space8"
@@ -139,7 +140,7 @@
             android:id="@+id/distance_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Distance"
+            android:text="@string/distance_res"
             android:textAlignment="center"
             android:textSize="40sp"
             app:layout_constraintBottom_toTopOf="@+id/totalDistance_text"
@@ -147,13 +148,35 @@
             app:layout_constraintStart_toEndOf="@+id/space8"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/chrono_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chrono"
+            android:textAlignment="center"
+            android:textSize="40sp"
+            app:layout_constraintBottom_toTopOf="@+id/space4"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/space2"
+            app:layout_constraintTop_toBottomOf="@+id/totalDistance_text" />
+
+        <Chronometer
+            android:id="@+id/chronometer_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="34sp"
+            app:layout_constraintBottom_toTopOf="@+id/space10"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/space6"
+            app:layout_constraintTop_toBottomOf="@+id/space4" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/status_Text"
         android:layout_width="402dp"
         android:layout_height="143dp"
-        android:text="null"
+        android:text=""
         android:textAlignment="center"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"

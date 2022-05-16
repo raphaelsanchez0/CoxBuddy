@@ -18,9 +18,11 @@ import android.os.Build;
 import android.os.Bundle;
 
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +41,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
@@ -53,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView splitText;
     private TextView totalDistanceTraveledText;
 
+
+
     private LocationRequest locationRequest;
 
     private ArrayList<LatLng> locationLog = new ArrayList<>();
@@ -62,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean trackingToggled = false;
     private int locationLogLenAtPause;
+
+    private Chronometer chronometer;
+    private boolean chronoRunning = false;
+    private long lastPause;
 
 
 
@@ -79,8 +89,11 @@ public class MainActivity extends AppCompatActivity {
         splitText = findViewById(R.id.split_text);
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
 
+
         startStopButton = findViewById(R.id.start_stop_button);
         resetButton = findViewById(R.id.reset_button);
+
+        chronometer = findViewById(R.id.chronometer_text);
 
 
 
@@ -96,6 +109,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 totalDistanceTraveled = 0;
                 totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
+                chronometer.stop();
+                chronometer.setBase(SystemClock.elapsedRealtime());
+                lastPause = 0;
 
             }
         });
@@ -109,11 +125,21 @@ public class MainActivity extends AppCompatActivity {
 
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
 
-
                     trackingToggled = true;
+                    chronoRunning = true;
                     startLocationUpdates();
                     getCurrentLocation();
                     locationLogLenAtPause = locationLog.size();
+
+                    resetButton.setEnabled(false);
+
+                    if (lastPause != 0){
+                        chronometer.setBase(chronometer.getBase()+SystemClock.elapsedRealtime()-lastPause);
+                    }
+                    else{
+                        chronometer.setBase(SystemClock.elapsedRealtime());
+                    }
+                    chronometer.start();
 
                     //turn on tracking
 
@@ -121,9 +147,12 @@ public class MainActivity extends AppCompatActivity {
                 }else if(startStopButton.getText().equals("Stop")){
                     startStopButton.setText("Start");
                     trackingToggled = false;
+                    chronoRunning = false;
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
-
+                    lastPause = SystemClock.elapsedRealtime();
+                    chronometer.stop();
                     stopLocationUpdates();
+                    resetButton.setEnabled(true);
 
                 }
                 Log.d("onOrOff",trackingToggled+"");

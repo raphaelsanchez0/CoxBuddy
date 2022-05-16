@@ -2,4 +2,6 @@
     <string name="app_name">CoxBuddy</string>
     <string name="start_key">Start</string>
     <string name="stop_key">Stop</string>
+    <string name="split_res">Split</string>
+    <string name="distance_res">Distance</string>
 </resources>
