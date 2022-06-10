@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -249,10 +250,12 @@ public class MainActivity extends AppCompatActivity {
                                                 //String split = SplitFormater.FormatToSplitString(SplitFormater.getSplit(speed));
                                                 double split = SplitFormater.getSplit(speed);
 
-
+                                                float results[] = new float[0];
 
                                                 if (trackingToggled == true) {
-                                                    totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                    Location.distanceBetween(lat1,lng1,lat2,lng2,results);
+                                                    totalDistanceTraveled += results[0];
+                                                    //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
                                                 }
                                                 //Log.d("LocationGrabber", split + "");
                                                 //Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
