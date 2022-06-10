@@ -80,6 +80,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Space
+            android:id="@+id/space11"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -107,6 +108,16 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+            android:id="@+id/speed_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="34sp"
+            app:layout_constraintBottom_toTopOf="@+id/space11"
+            app:layout_constraintEnd_toStartOf="@+id/space"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/space7" />
+
+        <TextView
             android:id="@+id/totalDistance_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -126,6 +137,17 @@
             app:layout_constraintEnd_toStartOf="@+id/space8"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/speed_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/speed"
+            android:textSize="40sp"
+            app:layout_constraintBottom_toBottomOf="@+id/space7"
+            app:layout_constraintEnd_toStartOf="@+id/space2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/split_text" />
 
         <Space
             android:id="@+id/space8"
@@ -152,7 +174,7 @@
             android:id="@+id/chrono_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chrono"
+            android:text="@string/chrono"
             android:textAlignment="center"
             android:textSize="40sp"
             app:layout_constraintBottom_toTopOf="@+id/space4"
