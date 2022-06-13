@@ -233,10 +233,12 @@ public class MainActivity extends AppCompatActivity {
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
                                         float speed =  locationResult.getLocations().get(index).getSpeed();
 
-                                        Log.d("speed",speed+"");
+                                        //Log.d("speed",speed+"");
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
                                         locationLog.add(new LatLng(latitude,longitude,currentTime));
+
+                                        Log.d("Locationlog",locationLog.toString());
 
                                             if (locationLog.size()-2>=locationLogLenAtPause) {
                                                 double lat1 = locationLog.get(locationLog.size() - 2).getLat();
@@ -253,9 +255,9 @@ public class MainActivity extends AppCompatActivity {
                                                 float results[] = new float[0];
 
                                                 if (trackingToggled == true) {
-                                                    Location.distanceBetween(lat1,lng1,lat2,lng2,results);
-                                                    totalDistanceTraveled += results[0];
-                                                    //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                    //Location.distanceBetween(lat1,lng1,lat2,lng2,results);
+                                                    //totalDistanceTraveled += results[0];
+                                                    totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
                                                 }
                                                 //Log.d("LocationGrabber", split + "");
                                                 //Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
@@ -270,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                                                 }
 
 
-                                                
+                                                speedText.setText(""+speed);
                                                 splitText.setText(SplitFormater.FormatToSplitString(split));
                                                 totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
                                                 if(trackingToggled == false){
