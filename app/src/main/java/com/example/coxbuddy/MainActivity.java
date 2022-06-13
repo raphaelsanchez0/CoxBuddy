@@ -51,9 +51,11 @@ public class MainActivity extends AppCompatActivity {
 
     private Button startStopButton;
     private Button resetButton;
+    private Button trackingToggleButton;
     private TextView splitText;
     private TextView totalDistanceTraveledText;
     private TextView speedText;
+
 
 
 
@@ -86,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //assigns button variables IDs
+
+        trackingToggleButton = findViewById(R.id.tracking_toggle_button);
         statusText = findViewById(R.id.status_Text);
         splitText = findViewById(R.id.split_text);
         speedText = findViewById(R.id.speed_text);
@@ -106,6 +110,13 @@ public class MainActivity extends AppCompatActivity {
             .setInterval(standardInterval * 1000)
             .setFastestInterval(fastestInterval *1000);
 
+
+        trackingToggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getCurrentLocation();
+            }
+        });
 
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,8 +142,9 @@ public class MainActivity extends AppCompatActivity {
                     trackingToggled = true;
                     chronoRunning = true;
                     startLocationUpdates();
-                    getCurrentLocation();
+
                     locationLogLenAtPause = locationLog.size();
+
 
                     resetButton.setEnabled(false);
 
@@ -228,18 +240,21 @@ public class MainActivity extends AppCompatActivity {
 
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
-
+                                        Log.d("locationList",locationResult.getLocations().toString());
                                         int index = locationResult.getLocations().size() - 1;
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
+
                                         float speed =  locationResult.getLocations().get(index).getSpeed();
+                                        double split = SplitFormater.getSplit(speed);
 
                                         //Log.d("speed",speed+"");
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
-                                        locationLog.add(new LatLng(latitude,longitude,currentTime));
+                                        locationLog.add(new LatLng(latitude,longitude,currentTime,trackingToggled));
 
-                                        Log.d("Locationlog",locationLog.toString());
+
+
 
                                             if (locationLog.size()-2>=locationLogLenAtPause) {
                                                 double lat1 = locationLog.get(locationLog.size() - 2).getLat();
@@ -251,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
                                                 int totalTimeDiff = totalTime2 - totalTime1;
                                                 //double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
                                                 //String split = SplitFormater.FormatToSplitString(SplitFormater.getSplit(speed));
-                                                double split = SplitFormater.getSplit(speed);
+
 
 
 
@@ -261,10 +276,8 @@ public class MainActivity extends AppCompatActivity {
                                                     //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
                                                     //test
                                                 }
-                                                //Log.d("LocationGrabber", split + "");
-                                                //Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
-                                                //Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
-                                                Log.d("speed", ""+speed);
+
+
 
                                                 if(locationResult.getLocations().get(index).hasSpeed()){
                                                     Log.d("speed", ""+speed);
@@ -274,14 +287,15 @@ public class MainActivity extends AppCompatActivity {
                                                 }
 
 
+
                                                 speedText.setText(""+speed);
                                                 splitText.setText(SplitFormater.FormatToSplitString(split));
                                                 totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
-                                                if(trackingToggled == false){
-                                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
-                                                    .removeLocationUpdates(this);
-
-                                                }
+//                                                if(trackingToggled == false){
+//                                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
+//                                                    .removeLocationUpdates(this);
+//
+//                                                }
                                             }
 
                                     }
