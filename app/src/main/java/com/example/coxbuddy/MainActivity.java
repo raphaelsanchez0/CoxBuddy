@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button startStopButton;
     private Button resetButton;
-    private Button trackingToggleButton;
+
     private TextView splitText;
     private TextView totalDistanceTraveledText;
     private TextView speedText;
@@ -64,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<LatLng> locationLog = new ArrayList<>();
     private int totalDistanceTraveled = 0;
 
-    private final int fastestInterval = 3;
-    private final int standardInterval =5;
+    private final int fastestInterval = 1;
+    private final int standardInterval =2;
 
 
     private boolean trackingToggled = false;
@@ -89,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //assigns button variables IDs
 
-        trackingToggleButton = findViewById(R.id.tracking_toggle_button);
         statusText = findViewById(R.id.status_Text);
         splitText = findViewById(R.id.split_text);
         speedText = findViewById(R.id.speed_text);
@@ -109,14 +108,10 @@ public class MainActivity extends AppCompatActivity {
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(standardInterval * 1000)
             .setFastestInterval(fastestInterval *1000);
+        getCurrentLocation();
 
 
-        trackingToggleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getCurrentLocation();
-            }
-        });
+
 
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
