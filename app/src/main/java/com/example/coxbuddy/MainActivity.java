@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 import android.Manifest;
 import android.app.Activity;
@@ -12,7 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,8 +40,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
@@ -54,8 +51,11 @@ public class MainActivity extends AppCompatActivity {
 
     private Button startStopButton;
     private Button resetButton;
+
     private TextView splitText;
     private TextView totalDistanceTraveledText;
+    private TextView speedText;
+
 
 
 
@@ -64,7 +64,9 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<LatLng> locationLog = new ArrayList<>();
     private int totalDistanceTraveled = 0;
 
-    private final int locationRefreshDelay = 5;
+    private final int fastestInterval = 1;
+    private final int standardInterval =2;
+
 
     private boolean trackingToggled = false;
     private int locationLogLenAtPause;
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private Chronometer chronometer;
     private boolean chronoRunning = false;
     private long lastPause;
+    private float Locationresults[] = new float[1];
 
 
 
@@ -85,8 +88,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //assigns button variables IDs
+
         statusText = findViewById(R.id.status_Text);
         splitText = findViewById(R.id.split_text);
+        speedText = findViewById(R.id.speed_text);
+
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
 
 
@@ -100,8 +106,11 @@ public class MainActivity extends AppCompatActivity {
         //creates location request objeccts and sets values to them.
         locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(8000)
-            .setFastestInterval(locationRefreshDelay*1000);
+            .setInterval(standardInterval * 1000)
+            .setFastestInterval(fastestInterval *1000);
+        getCurrentLocation();
+
+
 
 
         resetButton.setOnClickListener(new View.OnClickListener() {
@@ -128,8 +137,9 @@ public class MainActivity extends AppCompatActivity {
                     trackingToggled = true;
                     chronoRunning = true;
                     startLocationUpdates();
-                    getCurrentLocation();
+
                     locationLogLenAtPause = locationLog.size();
+
 
                     resetButton.setEnabled(false);
 
@@ -225,15 +235,21 @@ public class MainActivity extends AppCompatActivity {
 
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
-
+                                        Log.d("locationList",locationResult.getLocations().toString());
                                         int index = locationResult.getLocations().size() - 1;
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
-                                        Log.d("onOrOff",trackingToggled+"");
+                                        float speed =  locationResult.getLocations().get(index).getSpeed();
+                                        double split = SplitFormater.getSplit(speed);
+
+                                        //Log.d("speed",speed+"");
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
-                                        locationLog.add(new LatLng(latitude,longitude,currentTime));
+                                        locationLog.add(new LatLng(latitude,longitude,currentTime,trackingToggled));
+
+
+
 
                                             if (locationLog.size()-2>=locationLogLenAtPause) {
                                                 double lat1 = locationLog.get(locationLog.size() - 2).getLat();
@@ -243,22 +259,38 @@ public class MainActivity extends AppCompatActivity {
                                                 int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
                                                 int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
                                                 int totalTimeDiff = totalTime2 - totalTime1;
-                                                double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
+                                                //double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
+                                                //String split = SplitFormater.FormatToSplitString(SplitFormater.getSplit(speed));
+
+
+
 
                                                 if (trackingToggled == true) {
-                                                    totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                    Location.distanceBetween(lat1,lng1,lat2,lng2,Locationresults);
+                                                    totalDistanceTraveled += Locationresults[0];
+                                                    //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                    //test
                                                 }
-                                                Log.d("LocationGrabber", split + "");
-                                                Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
-                                                Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
-                                                
-                                                splitText.setText(SplitCalcualtor.FormatToSplitString(split));
-                                                totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
-                                                if(trackingToggled == false){
-                                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
-                                                    .removeLocationUpdates(this);
 
+
+
+                                                if(locationResult.getLocations().get(index).hasSpeed()){
+                                                    Log.d("speed", ""+speed);
+                                                    speedText.setText(""+speed);
+                                                }else{
+                                                    speedText.setText(0+"");
                                                 }
+
+
+
+                                                speedText.setText(""+speed);
+                                                splitText.setText(SplitFormater.FormatToSplitString(split));
+                                                totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
+//                                                if(trackingToggled == false){
+//                                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
+//                                                    .removeLocationUpdates(this);
+//
+//                                                }
                                             }
 
                                     }

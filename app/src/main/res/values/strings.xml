@@ -4,4 +4,6 @@
     <string name="stop_key">Stop</string>
     <string name="split_res">Split</string>
     <string name="distance_res">Distance</string>
+    <string name="chrono">Chrono</string>
+    <string name="speed">Speed</string>
 </resources>
