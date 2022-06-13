@@ -259,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
                                                     Location.distanceBetween(lat1,lng1,lat2,lng2,Locationresults);
                                                     totalDistanceTraveled += Locationresults[0];
                                                     //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                    //test
                                                 }
                                                 //Log.d("LocationGrabber", split + "");
                                                 //Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
