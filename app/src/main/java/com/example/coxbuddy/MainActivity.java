@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private Chronometer chronometer;
     private boolean chronoRunning = false;
     private long lastPause;
+    private float Locationresults[] = new float[1];
 
 
 
@@ -252,12 +253,12 @@ public class MainActivity extends AppCompatActivity {
                                                 //String split = SplitFormater.FormatToSplitString(SplitFormater.getSplit(speed));
                                                 double split = SplitFormater.getSplit(speed);
 
-                                                float results[] = new float[0];
+
 
                                                 if (trackingToggled == true) {
-                                                    //Location.distanceBetween(lat1,lng1,lat2,lng2,results);
-                                                    //totalDistanceTraveled += results[0];
-                                                    totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
+                                                    Location.distanceBetween(lat1,lng1,lat2,lng2,Locationresults);
+                                                    totalDistanceTraveled += Locationresults[0];
+                                                    //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
                                                 }
                                                 //Log.d("LocationGrabber", split + "");
                                                 //Log.d("totalDistanceTraveled", totalDistanceTraveled + "");
