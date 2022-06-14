@@ -210,50 +210,37 @@ public class MainActivity extends AppCompatActivity {
 
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
+                                        List<Location> locationData = locationResult.getLocations();
                                         int index = locationResult.getLocations().size() - 1;
+                                        Location currentLocation = locationResult.getLocations().get(index);
 
-                                        //List<Location> locationData = locationResult.getLocations();
+
+
 
                                         //LocationResult = locationResult.getLocations()
-                                        double latitude = locationResult.getLocations().get(index).getLatitude();
-                                        double longitude = locationResult.getLocations().get(index).getLongitude();
+                                        double latitude = currentLocation.getLatitude();
+                                        double longitude = currentLocation.getLongitude();
 
 
 
 
-                                        float speed = locationResult.getLocations().get(index).getSpeed();
+                                        float speed = currentLocation.getSpeed();
                                         double split = SplitFormater.getSplit(speed);
 
-                                        //Log.d("speed",speed+"");
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-
                                         locationLog.add(new LatLng(latitude,longitude,currentTime, onTimerToggle));
 
-
-
-
-                                            if (locationLog.size()-2>=locationLogLenAtPause) {
+                                            if (locationLog.size()-2>=locationLogLenAtPause) { //gets two most recent locations points from location log
                                                 double lat1 = locationLog.get(locationLog.size() - 2).getLat();
                                                 double lng1 = locationLog.get(locationLog.size() - 2).getLng();
                                                 double lat2 = locationLog.get(locationLog.size() - 1).getLat();
                                                 double lng2 = locationLog.get(locationLog.size() - 1).getLng();
-                                                int totalTime1 = locationLog.get(locationLog.size() - 2).getTimeAsTotalInSeconds();
-                                                int totalTime2 = locationLog.get(locationLog.size() - 1).getTimeAsTotalInSeconds();
-                                                int totalTimeDiff = totalTime2 - totalTime1;
-                                                //double split = SplitCalcualtor.getSplit(lat1, lng1, lat2, lng2, totalTimeDiff);
-                                                //String split = SplitFormater.FormatToSplitString(SplitFormater.getSplit(speed));
 
-
-
-
-                                                if (onTimerToggle) {
+                                                if (onTimerToggle) { //if onTimerToggled enabled, distance between two point will be calculated and added to totalDistanceTraveled
                                                     Location.distanceBetween(lat1,lng1,lat2,lng2,Locationresults);
                                                     totalDistanceTraveled += Locationresults[0];
-                                                    //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
-                                                    //test
+
                                                 }
-
-
 
                                                 strokerPerMinuteText.setText(String.valueOf(speed));
                                                 splitText.setText(SplitFormater.FormatToSplitString(split));
