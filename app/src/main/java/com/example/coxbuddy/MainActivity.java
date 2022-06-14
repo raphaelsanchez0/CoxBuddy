@@ -42,39 +42,39 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView statusText;
-
-
+    //declares Button and Textview objects
     private Button startStopButton;
     private Button resetButton;
 
     private TextView splitText;
     private TextView totalDistanceTraveledText;
-    private TextView speedText;
-
-
+    private TextView strokerPerMinuteText;
 
 
     private LocationRequest locationRequest;
 
+    //location log is where location data is stored chronologically
     private ArrayList<LatLng> locationLog = new ArrayList<>();
     private int totalDistanceTraveled = 0;
 
+
+    //declares standard and fastest location refresh intervals in seconds
     private final int fastestInterval = 1;
     private final int standardInterval =2;
 
 
-    private boolean trackingToggled = false;
+
+    private boolean onTimerToggle = false; //when true, distance traveled is tracked and timer is started.
     private int locationLogLenAtPause;
 
     private Chronometer chronometer;
-    private boolean chronoRunning = false;
     private long lastPause;
-    private float Locationresults[] = new float[1];
+    private final float[] Locationresults = new float[1];
 
 
 
@@ -87,32 +87,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //assigns button variables IDs
 
-        statusText = findViewById(R.id.status_Text);
+
+        //assigns button, textview and chronometer objects to appropriate IDs
         splitText = findViewById(R.id.split_text);
-        speedText = findViewById(R.id.speed_text);
-
+        strokerPerMinuteText = findViewById(R.id.strokersPerMinute_text);
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
-
-
         startStopButton = findViewById(R.id.start_stop_button);
         resetButton = findViewById(R.id.reset_button);
-
         chronometer = findViewById(R.id.chronometer_text);
 
 
 
-        //creates location request objeccts and sets values to them.
+        //creates location request objects and sets values to them.
         locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(standardInterval * 1000)
             .setFastestInterval(fastestInterval *1000);
-        getCurrentLocation();
+        //after location request has been created, location data is called to start tracking user location
+        getLocationData();
 
 
 
-
+        //reset button only enabled when timer is stopped. Eventually make reset button hold to reset
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -125,76 +122,59 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //a toggle button for the timer and distance. Switches toggles between start and stop
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                if(startStopButton.getText().equals("Start")){
-                    startStopButton.setText("Stop");
-
+                if(startStopButton.getText().equals("Start")){  //starts timer and distance tracking
+                    startStopButton.setText(R.string.stop);
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
-
-                    trackingToggled = true;
-                    chronoRunning = true;
-                    startLocationUpdates();
-
-                    locationLogLenAtPause = locationLog.size();
-
-
                     resetButton.setEnabled(false);
 
-                    if (lastPause != 0){
-                        chronometer.setBase(chronometer.getBase()+SystemClock.elapsedRealtime()-lastPause);
-                    }
-                    else{
-                        chronometer.setBase(SystemClock.elapsedRealtime());
-                    }
-                    chronometer.start();
+                    startOnTimer();
 
-                    //turn on tracking
-
-
-                }else if(startStopButton.getText().equals("Stop")){
-                    startStopButton.setText("Start");
-                    trackingToggled = false;
-                    chronoRunning = false;
+                }else if(startStopButton.getText().equals("Stop")){ //stops timer and distance tracking
+                    startStopButton.setText(R.string.start);
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
-                    lastPause = SystemClock.elapsedRealtime();
-                    chronometer.stop();
-                    stopLocationUpdates();
                     resetButton.setEnabled(true);
 
+                    stopOnTimer();
                 }
-                Log.d("onOrOff",trackingToggled+"");
             }
         });
 
-
-        //runs central location function
-        //getCurrentLocation();
-
-
-
     }
 
-    private void startLocationUpdates() {
-        statusText.setText("Location is being tracked");
+    private void startOnTimer() {
+        onTimerToggle = true;
+        locationLogLenAtPause = locationLog.size();
+
+        //either resumes or resets time based on last pause
+        if (lastPause != 0){
+            chronometer.setBase(chronometer.getBase()+SystemClock.elapsedRealtime()-lastPause);
+        }
+        else{
+            chronometer.setBase(SystemClock.elapsedRealtime());
+        }
+        chronometer.start();
     }
-    private void stopLocationUpdates(){
-        statusText.setText("Location is not being tracked");
+    private void stopOnTimer(){
+        onTimerToggle = false;
+        chronometer.stop();
+        lastPause = SystemClock.elapsedRealtime();
     }
+
 
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         if (requestCode == 1){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
 
                 if (isGPSEnabled()) {
 
-                    getCurrentLocation();
+                    getLocationData();
 
                 }else {
 
@@ -213,40 +193,41 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 2) {
             if (resultCode == Activity.RESULT_OK) {
 
-                getCurrentLocation();
+                getLocationData();
             }
         }
     }
 
-    private void getCurrentLocation() {
+    private void getLocationData() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
                 if (isGPSEnabled()) {
-
                     LocationServices.getFusedLocationProviderClient(MainActivity.this)
                             .requestLocationUpdates(locationRequest, new LocationCallback() {
                                 @Override
                                 public void onLocationResult(@NonNull LocationResult locationResult) {
                                     super.onLocationResult(locationResult);
 
-                                    //LocationServices.getFusedLocationProviderClient(MainActivity.this)
-                                            //.removeLocationUpdates(this);
-
                                     if (locationResult != null && locationResult.getLocations().size() >0){
 
-                                        Log.d("locationList",locationResult.getLocations().toString());
                                         int index = locationResult.getLocations().size() - 1;
+
+                                        //List<Location> locationData = locationResult.getLocations();
+
+                                        //LocationResult = locationResult.getLocations()
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
-                                        float speed =  locationResult.getLocations().get(index).getSpeed();
+
+
+
+                                        float speed = locationResult.getLocations().get(index).getSpeed();
                                         double split = SplitFormater.getSplit(speed);
 
                                         //Log.d("speed",speed+"");
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
-                                        locationLog.add(new LatLng(latitude,longitude,currentTime,trackingToggled));
+                                        locationLog.add(new LatLng(latitude,longitude,currentTime, onTimerToggle));
 
 
 
@@ -265,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                                                if (trackingToggled == true) {
+                                                if (onTimerToggle) {
                                                     Location.distanceBetween(lat1,lng1,lat2,lng2,Locationresults);
                                                     totalDistanceTraveled += Locationresults[0];
                                                     //totalDistanceTraveled += getDistanceFromCordinates.gpsDistance(lat1, lng1, lat2, lng2);
@@ -274,23 +255,9 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                                                if(locationResult.getLocations().get(index).hasSpeed()){
-                                                    Log.d("speed", ""+speed);
-                                                    speedText.setText(""+speed);
-                                                }else{
-                                                    speedText.setText(0+"");
-                                                }
-
-
-
-                                                speedText.setText(""+speed);
+                                                strokerPerMinuteText.setText(String.valueOf(speed));
                                                 splitText.setText(SplitFormater.FormatToSplitString(split));
                                                 totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
-//                                                if(trackingToggled == false){
-//                                                    LocationServices.getFusedLocationProviderClient(MainActivity.this)
-//                                                    .removeLocationUpdates(this);
-//
-//                                                }
                                             }
 
                                     }
@@ -308,9 +275,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void turnOnGPS() {
-
-
-
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(locationRequest);
         builder.setAlwaysShow(true);
