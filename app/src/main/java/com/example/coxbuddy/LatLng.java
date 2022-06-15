@@ -4,12 +4,12 @@ public class LatLng {
     double Lat;
     double Lng;
     String time;
-    boolean trackedenabled;
-    public LatLng(double Lat, double Lng, String time, boolean trackedenabled){
+    boolean trackingEnabled;
+    public LatLng(double Lat, double Lng, String time, boolean trackingEnabled){
         this.Lat = Lat;
         this.Lng = Lng;
         this.time = time;
-        this.trackedenabled = trackedenabled;
+        this.trackingEnabled = trackingEnabled;
     }
     public double getLat(){
         return Lat;
@@ -21,7 +21,7 @@ public class LatLng {
     }
 
     public boolean getIfTrackingEnabled(){
-        return trackedenabled;
+        return trackingEnabled;
     }
 
     public String getTimeStamp(){

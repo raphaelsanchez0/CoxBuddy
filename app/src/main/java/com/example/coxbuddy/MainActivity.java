@@ -18,7 +18,6 @@ import android.os.Bundle;
 
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -55,39 +54,27 @@ public class MainActivity extends AppCompatActivity {
     private TextView totalDistanceTraveledText;
     private TextView strokerPerMinuteText;
 
-
     private LocationRequest locationRequest;
 
     //location log is where location data is stored chronologically
     private ArrayList<LatLng> locationLog = new ArrayList<>();
     private int totalDistanceTraveled = 0;
 
-
     //declares standard and fastest location refresh intervals in seconds
     private final int fastestInterval = 1;
     private final int standardInterval =2;
-
-
 
     private boolean onTimerToggle = false; //when true, distance traveled is tracked and timer is started.
     private int locationLogLenAtPause;
 
     private Chronometer chronometer;
     private long lastPause;
-    private final float[] Locationresults = new float[1];
-
-
-
-
-
-
-
+    private final float[] locationResults = new float[1];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         //assigns button, textview and chronometer objects to appropriate IDs
         splitText = findViewById(R.id.split_text);
@@ -96,8 +83,6 @@ public class MainActivity extends AppCompatActivity {
         startStopButton = findViewById(R.id.start_stop_button);
         resetButton = findViewById(R.id.reset_button);
         chronometer = findViewById(R.id.chronometer_text);
-
-
 
         //creates location request objects and sets values to them.
         locationRequest = LocationRequest.create()
@@ -237,8 +222,8 @@ public class MainActivity extends AppCompatActivity {
                                                 double lng2 = locationLog.get(locationLog.size() - 1).getLng();
 
                                                 if (onTimerToggle) { //if onTimerToggled enabled, distance between two point will be calculated and added to totalDistanceTraveled
-                                                    Location.distanceBetween(lat1,lng1,lat2,lng2,Locationresults);
-                                                    totalDistanceTraveled += Locationresults[0];
+                                                    Location.distanceBetween(lat1,lng1,lat2,lng2, locationResults);
+                                                    totalDistanceTraveled += locationResults[0];
 
                                                 }
 
