@@ -41,6 +41,10 @@ import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.Viewport;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 
 import java.util.ArrayList;
@@ -82,6 +86,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private double accelerationCurrentValue;
     private double accelerationPreviousValue;
 
+    private int pointsPlotted = 0;
+
+    private Viewport viewport;
+
+    //creates series object associated with graph
+    LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +111,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
         accelerationText = (TextView) findViewById(R.id.acceleration_text);
+
+        //Initializes and points to graph
+        GraphView graph = (GraphView) findViewById(R.id.graph);
+        viewport = graph.getViewport();
+        viewport.setScrollable(true);
+        viewport.setXAxisBoundsManual(true);
+        graph.addSeries(series);
 
 
 
@@ -147,6 +165,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+
+
     }
 
 
@@ -160,6 +180,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double changeInAcceleration = accelerationCurrentValue-accelerationPreviousValue;
         accelerationPreviousValue = accelerationCurrentValue;
         accelerationText.setText(""+changeInAcceleration);
+
+        //updates graph
+        pointsPlotted++;
+        series.appendData(new DataPoint(pointsPlotted, changeInAcceleration),true,pointsPlotted);
+        viewport.setMaxX(pointsPlotted);
+        viewport.setMinX(pointsPlotted-200);
+
 
 
 
