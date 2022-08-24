@@ -11,6 +11,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -44,7 +48,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     //declares Button and Textview objects
     private Button startStopButton;
@@ -71,6 +75,11 @@ public class MainActivity extends AppCompatActivity {
     private long lastPause;
     private final float[] locationResults = new float[1];
 
+    Sensor accelerometer;
+    SensorManager sensorManager;
+    TextView acceleration;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +92,13 @@ public class MainActivity extends AppCompatActivity {
         startStopButton = findViewById(R.id.start_stop_button);
         resetButton = findViewById(R.id.reset_button);
         chronometer = findViewById(R.id.chronometer_text);
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
+        acceleration = (TextView) findViewById(R.id.acceleration_text);
+
+
 
         //creates location request objects and sets values to them.
         locationRequest = LocationRequest.create()
@@ -127,6 +143,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+    }
+
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        float x = sensorEvent.values[0];
+        float y = sensorEvent.values[1];
+        float z = sensorEvent.values[2];
+        acceleration.setText("x:"+Float.toString(x)+"y:"+Float.toString(y)+"z:"+ Float.toString(z));
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
 
