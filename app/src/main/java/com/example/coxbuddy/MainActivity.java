@@ -1,5 +1,5 @@
 package com.example.coxbuddy;
-
+//https://jdsp.dev/peaks.html
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private TextView splitText;
     private TextView totalDistanceTraveledText;
-    private TextView strokerPerMinuteText;
+    private TextView strokesPerMinuteText;
 
     private LocationRequest locationRequest;
 
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //assigns button, textview and chronometer objects to appropriate IDs
         splitText = findViewById(R.id.split_text);
-        strokerPerMinuteText = findViewById(R.id.strokersPerMinute_text);
+        strokesPerMinuteText = findViewById(R.id.strokersPerMinute_text);
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
         startStopButton = findViewById(R.id.start_stop_button);
         resetButton = findViewById(R.id.reset_button);
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                                                 }
 
-                                                strokerPerMinuteText.setText(String.valueOf(speed));
+                                                strokesPerMinuteText.setText(String.valueOf(speed));
                                                 splitText.setText(SplitFormater.FormatToSplitString(split));
                                                 totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
                                             }
