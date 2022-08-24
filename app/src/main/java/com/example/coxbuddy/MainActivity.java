@@ -75,9 +75,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private long lastPause;
     private final float[] locationResults = new float[1];
 
-    Sensor accelerometer;
-    SensorManager sensorManager;
-    TextView acceleration;
+    private Sensor accelerometer;
+    private SensorManager sensorManager;
+    private TextView accelerationText;
+
+    private double accelerationCurrentValue;
+    private double accelerationPreviousValue;
 
 
     @Override
@@ -96,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
-        acceleration = (TextView) findViewById(R.id.acceleration_text);
+        accelerationText = (TextView) findViewById(R.id.acceleration_text);
 
 
 
@@ -152,7 +155,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float x = sensorEvent.values[0];
         float y = sensorEvent.values[1];
         float z = sensorEvent.values[2];
-        acceleration.setText("x:"+Float.toString(x)+"y:"+Float.toString(y)+"z:"+ Float.toString(z));
+        accelerationCurrentValue = Math.sqrt(x*x + y*y + z*z);
+        //may need to wrap changeInAcceleration in Math.abs to avoid negative values
+        double changeInAcceleration = accelerationCurrentValue-accelerationPreviousValue;
+        accelerationPreviousValue = accelerationCurrentValue;
+        accelerationText.setText(""+changeInAcceleration);
+
+
+
 
     }
 
