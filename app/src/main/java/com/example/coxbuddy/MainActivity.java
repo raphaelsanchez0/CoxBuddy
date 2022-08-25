@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -22,6 +23,7 @@ import android.os.Bundle;
 
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -91,7 +93,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Viewport viewport;
 
     //creates series object associated with graph
-    LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+    private LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+
+    //creates a generalized list for acceleration values
+    //List<List<Double>> accelerationValues = new ArrayList<List<Double>>();
+    private ArrayList<Double> accelerationValues = new ArrayList<Double>();
+    //List<Double> accelerationValues = new ArrayList<Double>();
+    //empty list which will be filled with the detected peaks in the stroke
+    //List<Point> extremes = new ArrayList<Point>();
 
 
     @Override
@@ -181,9 +190,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerationPreviousValue = accelerationCurrentValue;
         accelerationText.setText(""+changeInAcceleration);
 
+        //adds point to accelerationvalues 2d array
+        accelerationValues.add(changeInAcceleration);
+
+        double smoothing = 1.2;
+        double value = accelerationValues.get(0);
+
+        double currentValue = accelerationValues.get(pointsPlotted);
+        value += (currentValue - value)/smoothing;
+        accelerationValues.set(pointsPlotted,value);
+
+
+
+
         //updates graph
         pointsPlotted++;
-        series.appendData(new DataPoint(pointsPlotted, changeInAcceleration),true,pointsPlotted);
+        //adds point to graph
+        //adds raw data to graph
+        //series.appendData(new DataPoint(pointsPlotted, changeInAcceleration),true,pointsPlotted);
+        series.appendData(new DataPoint(pointsPlotted,value),true,pointsPlotted);
         viewport.setMaxX(pointsPlotted);
         viewport.setMinX(pointsPlotted-200);
 
