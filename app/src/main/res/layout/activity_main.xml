@@ -242,11 +242,21 @@
         app:layout_constraintVertical_bias="0.95" />
 
     <com.jjoe64.graphview.GraphView
-        android:id="@+id/graph"
+        android:id="@+id/lowPassGraph"
         android:layout_width="match_parent"
         android:layout_height="200dip"
-        app:layout_constraintBottom_toTopOf="@+id/space9"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.57"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/rawGraph"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.947"
         tools:layout_editor_absoluteX="0dp" />
 
 

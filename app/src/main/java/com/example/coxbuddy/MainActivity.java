@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -23,7 +22,6 @@ import android.os.Bundle;
 
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -94,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //creates series object associated with graph
     private LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+    private LineGraphSeries<DataPoint>rawSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
 
     //creates a generalized list for acceleration values
     //List<List<Double>> accelerationValues = new ArrayList<List<Double>>();
@@ -122,13 +121,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerationText = (TextView) findViewById(R.id.acceleration_text);
 
         //Initializes and points to graph
-        GraphView graph = (GraphView) findViewById(R.id.graph);
+        GraphView graph = (GraphView) findViewById(R.id.lowPassGraph);
         viewport = graph.getViewport();
         viewport.setScrollable(true);
         viewport.setXAxisBoundsManual(true);
         graph.addSeries(series);
+        //graph.addSeries(rawSeries);
 
-
+        //rawSeries.setColor(Color.GREEN);
 
         //creates location request objects and sets values to them.
         locationRequest = LocationRequest.create()
@@ -203,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
+
         //updates graph
         pointsPlotted++;
         //adds point to graph
@@ -212,8 +213,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         viewport.setMaxX(pointsPlotted);
         viewport.setMinX(pointsPlotted-200);
 
-
-
+        //rawSeries
+        series.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,pointsPlotted);
 
 
     }
