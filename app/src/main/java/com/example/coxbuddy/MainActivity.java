@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //declares Button and Textview objects
     private Button startStopButton;
     private Button resetButton;
+    private Button historyButton;
 
     private TextView splitText;
     private TextView totalDistanceTraveledText;
@@ -116,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
         startStopButton = findViewById(R.id.start_stop_button);
         resetButton = findViewById(R.id.reset_button);
+        historyButton = findViewById(R.id.history_button);
         chronometer = findViewById(R.id.chronometer_text);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -153,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+
         //a toggle button for the timer and distance. Switches toggles between start and stop
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -171,6 +174,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     stopOnTimer();
                 }
+            }
+        });
+
+        historyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launchHistoryActivity(view);
+
             }
         });
 
@@ -410,6 +421,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Toast.makeText(getApplicationContext(),"File Write Failed",Toast.LENGTH_SHORT);
             e.printStackTrace();
         }
+    }
+
+    private void launchHistoryActivity(View v){
+        Intent intent = new Intent(this,HistoryActivity.class);
+        startActivity(intent);
     }
 
 
