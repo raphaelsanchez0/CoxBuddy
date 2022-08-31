@@ -22,12 +22,15 @@ import android.os.Bundle;
 
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 
 import com.google.android.gms.common.api.ApiException;
@@ -86,20 +89,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private double accelerationCurrentValue;
     private double accelerationPreviousValue;
 
-    private int pointsPlotted = 0;
+    private double pointsPlotted = 0.0;
 
-    private Viewport viewport;
+    private Viewport lowPassViewport;
+    private Viewport rawViewport;
 
     //creates series object associated with graph
     private LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {});
     private LineGraphSeries<DataPoint>rawSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
 
     //creates a generalized list for acceleration values
-    //List<List<Double>> accelerationValues = new ArrayList<List<Double>>();
     private ArrayList<Double> accelerationValues = new ArrayList<Double>();
-    //List<Double> accelerationValues = new ArrayList<Double>();
-    //empty list which will be filled with the detected peaks in the stroke
-    //List<Point> extremes = new ArrayList<Point>();
+
+
+
 
 
     @Override
@@ -117,18 +120,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this,accelerometer, 1000);
         accelerationText = (TextView) findViewById(R.id.acceleration_text);
 
-        //Initializes and points to graph
-        GraphView graph = (GraphView) findViewById(R.id.lowPassGraph);
-        viewport = graph.getViewport();
-        viewport.setScrollable(true);
-        viewport.setXAxisBoundsManual(true);
-        graph.addSeries(series);
-        //graph.addSeries(rawSeries);
-
-        //rawSeries.setColor(Color.GREEN);
+        //sets rawGraph as target and configurs viewport
+        GraphView rawGraph = (GraphView) findViewById(R.id.rawGraph);
+        rawViewport = rawGraph.getViewport();
+        rawViewport.setScrollable(true);
+        rawViewport.setXAxisBoundsManual(true);
+        rawGraph.addSeries(rawSeries);
 
         //creates location request objects and sets values to them.
         locationRequest = LocationRequest.create()
@@ -190,31 +190,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerationPreviousValue = accelerationCurrentValue;
         accelerationText.setText(""+changeInAcceleration);
 
-        //adds point to accelerationvalues 2d array
+        //adds point to accelerationValues 2d array
         accelerationValues.add(changeInAcceleration);
 
-        double smoothing = 1.2;
-        double value = accelerationValues.get(0);
 
-        double currentValue = accelerationValues.get(pointsPlotted);
-        value += (currentValue - value)/smoothing;
-        accelerationValues.set(pointsPlotted,value);
 
 
 
 
 
         //updates graph
-        pointsPlotted++;
-        //adds point to graph
-        //adds raw data to graph
-        //series.appendData(new DataPoint(pointsPlotted, changeInAcceleration),true,pointsPlotted);
-        series.appendData(new DataPoint(pointsPlotted,value),true,pointsPlotted);
-        viewport.setMaxX(pointsPlotted);
-        viewport.setMinX(pointsPlotted-200);
 
-        //rawSeries
-        series.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,pointsPlotted);
+        pointsPlotted+=0.001;
+        //adds point to graph
+        rawSeries.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
+
+        rawViewport.setMaxX(pointsPlotted);
+        rawViewport.setMinX(pointsPlotted-.5);
+
+
+
+        //breaks code, only for debugging
+        while(onTimerToggle){
+            writeToFile("accelerationValues",pointsPlotted+"",changeInAcceleration+"");
+        }
+
 
 
     }
@@ -236,6 +236,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             chronometer.setBase(SystemClock.elapsedRealtime());
         }
         chronometer.start();
+        String [] files = getApplicationContext().fileList();
+        for(int i =0; i<files.length;i++){
+            Log.d("filelist",files[i]);
+        }
+
+
+
     }
     private void stopOnTimer(){
         onTimerToggle = false;
@@ -390,6 +397,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         isEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         return isEnabled;
 
+    }
+
+    private void writeToFile (String fileName, String x,String y){
+        String completeString = x +","+y;
+        File filePath = getApplicationContext().getFilesDir();
+        try{
+            FileOutputStream fileWriter = new FileOutputStream(new File(filePath,fileName),true);
+            fileWriter.write(completeString.getBytes());
+            fileWriter.close();
+        }catch (Exception e){
+            Toast.makeText(getApplicationContext(),"File Write Failed",Toast.LENGTH_SHORT);
+            e.printStackTrace();
+        }
     }
 
 
