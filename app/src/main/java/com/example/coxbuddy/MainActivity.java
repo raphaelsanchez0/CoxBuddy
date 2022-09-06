@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private double pointsPlotted = 0.0;
 
-    private Viewport lowPassViewport;
+
     private Viewport rawViewport;
 
     //creates series object associated with graph
@@ -122,10 +122,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this,accelerometer, 1000);
+        sensorManager.registerListener(this,accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         accelerationText = (TextView) findViewById(R.id.acceleration_text);
 
-        //sets rawGraph as target and configurs viewport
+        //sets rawGraph as target and configures viewport
         GraphView rawGraph = (GraphView) findViewById(R.id.rawGraph);
         rawViewport = rawGraph.getViewport();
         rawViewport.setScrollable(true);
@@ -172,6 +172,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
                     resetButton.setEnabled(true);
 
+                    //adds all points in graphview to a list
+
+
+
+
+
                     stopOnTimer();
                 }
             }
@@ -199,10 +205,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //may need to wrap changeInAcceleration in Math.abs to avoid negative values
         double changeInAcceleration = accelerationCurrentValue-accelerationPreviousValue;
         accelerationPreviousValue = accelerationCurrentValue;
-        accelerationText.setText(""+changeInAcceleration);
+
 
         //adds point to accelerationValues 2d array
-        accelerationValues.add(changeInAcceleration);
+
+
 
 
 
@@ -212,18 +219,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //updates graph
 
-        pointsPlotted+=0.001;
+        pointsPlotted+=1;
         //adds point to graph
         rawSeries.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
 
         rawViewport.setMaxX(pointsPlotted);
-        rawViewport.setMinX(pointsPlotted-.5);
+        rawViewport.setMinX(pointsPlotted-500);
 
 
 
         //breaks code, only for debugging
-        while(onTimerToggle){
-            writeToFile("accelerationValues",pointsPlotted+"",changeInAcceleration+"");
+        if (onTimerToggle){
+            accelerationValues.add(changeInAcceleration);
+            Log.d("pointsplotted", pointsPlotted+","+changeInAcceleration);
         }
 
 
@@ -247,10 +255,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             chronometer.setBase(SystemClock.elapsedRealtime());
         }
         chronometer.start();
-        String [] files = getApplicationContext().fileList();
-        for(int i =0; i<files.length;i++){
-            Log.d("filelist",files[i]);
-        }
+//        String [] files = getApplicationContext().fileList();
+//        for(int i =0; i<files.length;i++){
+//            Log.d("filelist",files[i]);
+//        }
 
 
 
@@ -425,7 +433,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void launchHistoryActivity(View v){
         Intent intent = new Intent(this,HistoryActivity.class);
+        intent.putExtra("accelerometerValues",accelerationValues);
         startActivity(intent);
+
     }
 
 
