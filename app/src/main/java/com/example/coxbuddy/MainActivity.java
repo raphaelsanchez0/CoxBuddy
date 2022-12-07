@@ -31,12 +31,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.FieldPosition;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 
 import com.google.android.gms.common.api.ApiException;
@@ -59,6 +59,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -100,11 +101,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private double pointsPlotted = 0.0;
 
 
-    private Viewport rawViewport;
+    private Viewport graphViewport;
 
     //creates series object associated with graph
     private LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {});
-    private LineGraphSeries<DataPoint>rawSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+    private LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+    private LineGraphSeries<DataPoint>currentSeries;
+
+    private Session currentSession;
 
     //creates a generalized list for acceleration values
     private ArrayList<Double> accelerationValues = new ArrayList<Double>();
@@ -123,12 +127,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         verifyStoragePermissions(this);
+
 
         //assigns button, textview and chronometer objects to appropriate IDs
         splitText = findViewById(R.id.split_text);
@@ -145,11 +151,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerationText = (TextView) findViewById(R.id.acceleration_text);
 
         //sets rawGraph as target and configures viewport
-        GraphView rawGraph = (GraphView) findViewById(R.id.rawGraph);
-        rawViewport = rawGraph.getViewport();
-        rawViewport.setScrollable(true);
-        rawViewport.setXAxisBoundsManual(true);
-        rawGraph.addSeries(rawSeries);
+        GraphView graph = (GraphView) findViewById(R.id.rawGraph);
+        graphViewport = graph.getViewport();
+        graphViewport.setScrollable(true);
+        graphViewport.setXAxisBoundsManual(true);
+        graph.addSeries(graphSeries);
 
         //creates location request objects and sets values to them.
         locationRequest = LocationRequest.create()
@@ -188,6 +194,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     currentWriter = createFile();
                     //historyIntentMemory.add(currentFileName);
+
+                    currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+
+
+                    currentSession = new Session();
 
 
 
@@ -253,23 +264,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
-
-
         //updates graph
 
         pointsPlotted+=1;
         //adds point to graph
-        rawSeries.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
+        graphSeries.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
 
-        rawViewport.setMaxX(pointsPlotted);
-        rawViewport.setMinX(pointsPlotted-500);
+
+        graphViewport.setMaxX(pointsPlotted);
+        graphViewport.setMinX(pointsPlotted-500);
 
 
 
         //breaks code, only for debugging
         if (onTimerToggle){
             accelerationValues.add(changeInAcceleration);
-            writeToFile(currentWriter,pointsPlotted+"",changeInAcceleration+"");
+            currentSession.series.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
+
+
         }
 
 
@@ -549,6 +561,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+
+
+
     public static void verifyStoragePermissions(Activity activity) {
         // Check if we have write permission
         int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -562,4 +577,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             );
         }
     }
+
+//    public void saveSeries(LineGraphSeries series){
+//        File dir = new File();
+//        String fileName = getCurrentDateTime();
+//        try{
+//            FileOutputStream file =openFileOutput(getCurrentDateTime(),MODE_PRIVATE);
+//            OutputStreamWriter outputStreamWriter =  new OutputStreamWriter(file);
+//            for(int i =0;i<currentSeries.)
+//
+//
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+
 }
