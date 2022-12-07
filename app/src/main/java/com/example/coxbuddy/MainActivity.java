@@ -20,6 +20,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.os.Environment;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
@@ -33,7 +34,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 
 import com.google.android.gms.common.api.ApiException;
@@ -106,10 +109,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //creates a generalized list for acceleration values
     private ArrayList<Double> accelerationValues = new ArrayList<Double>();
 
-    private String currentFileName;
+    private FileWriter currentWriter;
+    private FileOutputStream currentFileStream;
 
     //list of all filenames that store memory of data
     private ArrayList<String> historyIntentMemory = new ArrayList<String>();
+
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
 
 
 
@@ -117,6 +127,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        verifyStoragePermissions(this);
 
         //assigns button, textview and chronometer objects to appropriate IDs
         splitText = findViewById(R.id.split_text);
@@ -174,8 +186,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
                     resetButton.setEnabled(false);
 
-                    currentFileName = getCurrentDateTime();
-                    historyIntentMemory.add(currentFileName);
+                    currentWriter = createFile();
+                    //historyIntentMemory.add(currentFileName);
 
 
 
@@ -187,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setText(R.string.start);
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
                     resetButton.setEnabled(true);
+                    closeFile(currentWriter);
 
 
                     //adds all points in graphview to a list
@@ -256,8 +269,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //breaks code, only for debugging
         if (onTimerToggle){
             accelerationValues.add(changeInAcceleration);
-            Log.d("pointsplotted", pointsPlotted+","+changeInAcceleration);
-            writeToFile(currentFileName,pointsPlotted+"",changeInAcceleration+"");
+            writeToFile(currentWriter,pointsPlotted+"",changeInAcceleration+"");
         }
 
 
@@ -444,18 +456,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    private void writeToFile (String fileName, String x,String y){
-        String completeString = x +","+y;
-        File filePath = getApplicationContext().getFilesDir();
-        try{
-            FileOutputStream fileWriter = new FileOutputStream(new File(filePath,fileName),true);
-            fileWriter.write(completeString.getBytes());
-            fileWriter.close();
-        }catch (Exception e){
-            Toast.makeText(getApplicationContext(),"File Write Failed",Toast.LENGTH_SHORT);
-            e.printStackTrace();
-        }
-    }
+//    private void writeToFile (String fileName, String x,String y){
+//        String completeString = x +","+y;
+//        File filePath = getApplicationContext().getFilesDir();
+//        try{
+//            FileOutputStream fileWriter = new FileOutputStream(new File(filePath,fileName),true);
+//            fileWriter.write(completeString.getBytes());
+//            fileWriter.close();
+//        }catch (Exception e){
+//            Toast.makeText(getApplicationContext(),"File Write Failed",Toast.LENGTH_SHORT);
+//            e.printStackTrace();
+//        }
+//    }
 
     private void launchHistoryActivity(View v){
         Intent intent = new Intent(this,HistoryActivity.class);
@@ -478,29 +490,76 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public void save(String fileName){
-        FileOutputStream fos = null;
+//    public void save(String fileName){
+//        FileOutputStream fos = null;
+//
+//        try {
+//            fos = openFileOutput(fileName,MODE_PRIVATE);
+//            fos.write("test".getBytes());
+//            Toast.makeText(this, "Saved to " + getFilesDir()+ "/" + fileName, Toast.LENGTH_LONG).show();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }finally {
+//            if(fos != null){
+//                try {
+//                    fos.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//
+//    }
 
-        try {
-            fos = openFileOutput(fileName,MODE_PRIVATE);
-            fos.write("test".getBytes());
-            Toast.makeText(this, "Saved to " + getFilesDir()+ "/" + fileName, Toast.LENGTH_LONG).show();
-        } catch (FileNotFoundException e) {
+    public FileWriter createFile(){
+        File file = Environment.getExternalStorageDirectory();
+        String strFilePath = file.getAbsolutePath()+getCurrentDateTime();
+//        String fileName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath();
+//        fileName += "/"+getCurrentDateTime()+".txt";
+
+        try{
+            currentFileStream = new FileOutputStream(strFilePath);
+            FileWriter writer = new FileWriter(currentFileStream.getFD());
+            return writer;
+        }catch (IOException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            if(fos != null){
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            Log.d("createFileException","createFileException");
+            return null;
         }
 
     }
 
+    public void writeToFile(FileWriter writer, String x,String y){
+        try{
+            writer.write(x +","+y);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+    public void closeFile(FileWriter writer){
+        try{
+            writer.close();
+            currentFileStream.getFD().sync();
+            currentFileStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+    }
 
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
+    }
 }
