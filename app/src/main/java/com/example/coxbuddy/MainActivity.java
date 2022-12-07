@@ -30,7 +30,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 import com.google.android.gms.common.api.ApiException;
@@ -51,6 +54,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -102,7 +106,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //creates a generalized list for acceleration values
     private ArrayList<Double> accelerationValues = new ArrayList<Double>();
 
+    private String currentFileName;
 
+    //list of all filenames that store memory of data
+    private ArrayList<String> historyIntentMemory = new ArrayList<String>();
 
 
 
@@ -142,6 +149,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
+
+
         //reset button only enabled when timer is stopped. Eventually make reset button hold to reset
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -165,6 +174,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
                     resetButton.setEnabled(false);
 
+                    currentFileName = getCurrentDateTime();
+                    historyIntentMemory.add(currentFileName);
+
+
+
+
+
                     startOnTimer();
 
                 }else if(startStopButton.getText().equals("Stop")){ //stops timer and distance tracking
@@ -172,7 +188,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
                     resetButton.setEnabled(true);
 
+
                     //adds all points in graphview to a list
+
+                    /*
+                    for(int i = 0;i<accelerationValues.size();i++){
+                        writeToFile();
+                        Log.d("accelerometerValues", accelerationValues.get(i) +"");
+                    }
+                    */
+
 
 
 
@@ -232,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (onTimerToggle){
             accelerationValues.add(changeInAcceleration);
             Log.d("pointsplotted", pointsPlotted+","+changeInAcceleration);
+            writeToFile(currentFileName,pointsPlotted+"",changeInAcceleration+"");
         }
 
 
@@ -434,9 +460,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void launchHistoryActivity(View v){
         Intent intent = new Intent(this,HistoryActivity.class);
         intent.putExtra("accelerometerValues",accelerationValues);
+        intent.putExtra("memory", historyIntentMemory);
         startActivity(intent);
 
     }
+
+    private String getCurrentDateTime(){
+        Calendar calender = Calendar.getInstance();
+        String dateString=
+                (calender.get(Calendar.HOUR_OF_DAY)) +":"+
+                (calender.get(Calendar.MINUTE))+"_"+
+                (calender.get(Calendar.MONTH)+1)+"/"+
+                calender.get(Calendar.DAY_OF_MONTH)+"/"+
+                calender.get(Calendar.YEAR);
+
+        return dateString;
+
+    }
+
+    public void save(String fileName){
+        FileOutputStream fos = null;
+
+        try {
+            fos = openFileOutput(fileName,MODE_PRIVATE);
+            fos.write("test".getBytes());
+            Toast.makeText(this, "Saved to " + getFilesDir()+ "/" + fileName, Toast.LENGTH_LONG).show();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if(fos != null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
 
 
 }
