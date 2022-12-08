@@ -228,9 +228,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (onTimerToggle){
 
-            currentSession.series.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
-            currentSession.totalPoints+=1;
-
+            currentSession.addPoint(changeInAcceleration);
 
         }
 
@@ -432,17 +430,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    private void writeSessionToFile(Session session){
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        File file = new File(path,getCurrentDateTime());
-
+    public void writeSessionToFile(Session session){
         try{
             FileOutputStream fis = openFileOutput(getCurrentDateTime(),MODE_PRIVATE);
-            for(int i =1;i<session.totalPoints;i++){
-                double currentDataPoints = session.series.findDataPointAtX(i).getY();
+            //gets every point in the session and writes them to a file named 'DATETIME"
+            for(int i = 0; i<session.totalPoints;i++){
+                double currentDataPoints = session.getPointAtX(i);
                 fis.write((currentDataPoints+"").getBytes());
             }
-
             fis.close();
             Toast.makeText(getApplicationContext(),"Wrote to file"+getCurrentDateTime(),Toast.LENGTH_SHORT).show();
 
@@ -450,5 +445,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             e.printStackTrace();
         }
     }
+
+
 
 }
