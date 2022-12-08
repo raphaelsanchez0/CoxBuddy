@@ -31,7 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -100,18 +99,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private double pointsPlotted = 0.0;
 
-
+    //Viewport is how the graph is displayed, not the data itself
     private Viewport graphViewport;
 
-    //creates series object associated with graph
-    private LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+    //series are containers for the data itself which work with the Viewports
     private LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
-    private LineGraphSeries<DataPoint>currentSeries;
+    //current Series is a pointed used to hold the series currently being created while the timer is enabled
+
+
 
     private Session currentSession;
 
-    //creates a generalized list for acceleration values
-    private ArrayList<Double> accelerationValues = new ArrayList<Double>();
+    private ArrayList<Session> sessions = new ArrayList<Session>();
 
     private FileWriter currentWriter;
     private FileOutputStream currentFileStream;
@@ -119,22 +118,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //list of all filenames that store memory of data
     private ArrayList<String> historyIntentMemory = new ArrayList<String>();
 
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE};
-
-
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        verifyStoragePermissions(this);
-
 
         //assigns button, textview and chronometer objects to appropriate IDs
         splitText = findViewById(R.id.split_text);
@@ -165,10 +152,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //after location request has been created, location data is called to start tracking user location
         getLocationData();
 
-
-
-
-
         //reset button only enabled when timer is stopped. Eventually make reset button hold to reset
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -192,17 +175,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
                     resetButton.setEnabled(false);
 
-                    currentWriter = createFile();
-                    //historyIntentMemory.add(currentFileName);
-
-                    currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
-
-
+                    //creates a new session object to store datapoints created while timer is toggled
                     currentSession = new Session();
-
-
-
-
 
                     startOnTimer();
 
@@ -210,22 +184,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setText(R.string.start);
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
                     resetButton.setEnabled(true);
-                    closeFile(currentWriter);
 
-
-                    //adds all points in graphview to a list
-
-                    /*
-                    for(int i = 0;i<accelerationValues.size();i++){
-                        writeToFile();
-                        Log.d("accelerometerValues", accelerationValues.get(i) +"");
-                    }
-                    */
-
-
-
-
-
+                    //Adds the current to an Arraylist of sessions
+                    sessions.add(currentSession);
+                    writeSessionToFile(currentSession);
 
                     stopOnTimer();
                 }
@@ -236,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View view) {
                 launchHistoryActivity(view);
-
             }
         });
 
@@ -256,30 +217,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accelerationPreviousValue = accelerationCurrentValue;
 
 
-        //adds point to accelerationValues 2d array
-
-
-
-
-
-
-
-        //updates graph
-
+        //Main-graph pointsplotted increases by one
         pointsPlotted+=1;
+
         //adds point to graph
         graphSeries.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
-
 
         graphViewport.setMaxX(pointsPlotted);
         graphViewport.setMinX(pointsPlotted-500);
 
-
-
-        //breaks code, only for debugging
         if (onTimerToggle){
-            accelerationValues.add(changeInAcceleration);
+
             currentSession.series.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
+            currentSession.totalPoints+=1;
 
 
         }
@@ -305,12 +255,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             chronometer.setBase(SystemClock.elapsedRealtime());
         }
         chronometer.start();
-//        String [] files = getApplicationContext().fileList();
-//        for(int i =0; i<files.length;i++){
-//            Log.d("filelist",files[i]);
-//        }
-
-
 
     }
     private void stopOnTimer(){
@@ -468,22 +412,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-//    private void writeToFile (String fileName, String x,String y){
-//        String completeString = x +","+y;
-//        File filePath = getApplicationContext().getFilesDir();
-//        try{
-//            FileOutputStream fileWriter = new FileOutputStream(new File(filePath,fileName),true);
-//            fileWriter.write(completeString.getBytes());
-//            fileWriter.close();
-//        }catch (Exception e){
-//            Toast.makeText(getApplicationContext(),"File Write Failed",Toast.LENGTH_SHORT);
-//            e.printStackTrace();
-//        }
-//    }
-
     private void launchHistoryActivity(View v){
         Intent intent = new Intent(this,HistoryActivity.class);
-        intent.putExtra("accelerometerValues",accelerationValues);
         intent.putExtra("memory", historyIntentMemory);
         startActivity(intent);
 
@@ -494,103 +424,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         String dateString=
                 (calender.get(Calendar.HOUR_OF_DAY)) +":"+
                 (calender.get(Calendar.MINUTE))+"_"+
-                (calender.get(Calendar.MONTH)+1)+"/"+
-                calender.get(Calendar.DAY_OF_MONTH)+"/"+
+                (calender.get(Calendar.MONTH)+1)+"-"+
+                calender.get(Calendar.DAY_OF_MONTH)+"-"+
                 calender.get(Calendar.YEAR);
 
         return dateString;
 
     }
 
-//    public void save(String fileName){
-//        FileOutputStream fos = null;
-//
-//        try {
-//            fos = openFileOutput(fileName,MODE_PRIVATE);
-//            fos.write("test".getBytes());
-//            Toast.makeText(this, "Saved to " + getFilesDir()+ "/" + fileName, Toast.LENGTH_LONG).show();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }finally {
-//            if(fos != null){
-//                try {
-//                    fos.close();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//
-//    }
-
-    public FileWriter createFile(){
-        File file = Environment.getExternalStorageDirectory();
-        String strFilePath = file.getAbsolutePath()+getCurrentDateTime();
-//        String fileName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath();
-//        fileName += "/"+getCurrentDateTime()+".txt";
+    private void writeSessionToFile(Session session){
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+        File file = new File(path,getCurrentDateTime());
 
         try{
-            currentFileStream = new FileOutputStream(strFilePath);
-            FileWriter writer = new FileWriter(currentFileStream.getFD());
-            return writer;
-        }catch (IOException e) {
-            e.printStackTrace();
-            Log.d("createFileException","createFileException");
-            return null;
-        }
+            FileOutputStream fis = openFileOutput(getCurrentDateTime(),MODE_PRIVATE);
+            for(int i =1;i<session.totalPoints;i++){
+                double currentDataPoints = session.series.findDataPointAtX(i).getY();
+                fis.write((currentDataPoints+"").getBytes());
+            }
 
-    }
+            fis.close();
+            Toast.makeText(getApplicationContext(),"Wrote to file"+getCurrentDateTime(),Toast.LENGTH_SHORT).show();
 
-    public void writeToFile(FileWriter writer, String x,String y){
-        try{
-            writer.write(x +","+y);
-        }catch (IOException e){
+        }catch (Exception e){
             e.printStackTrace();
         }
     }
-    public void closeFile(FileWriter writer){
-        try{
-            writer.close();
-            currentFileStream.getFD().sync();
-            currentFileStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
-
-
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
-    }
-
-//    public void saveSeries(LineGraphSeries series){
-//        File dir = new File();
-//        String fileName = getCurrentDateTime();
-//        try{
-//            FileOutputStream file =openFileOutput(getCurrentDateTime(),MODE_PRIVATE);
-//            OutputStreamWriter outputStreamWriter =  new OutputStreamWriter(file);
-//            for(int i =0;i<currentSeries.)
-//
-//
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
 
 }
