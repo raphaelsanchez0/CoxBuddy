@@ -1,6 +1,8 @@
     package com.example.coxbuddy;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -14,15 +16,20 @@ import java.util.List;
     public class HistoryActivity extends AppCompatActivity {
         ListView sessionNameListView;
 
+        @Override
+        protected void onResume() {
+            super.onResume();
+            updateSessionsListview();
 
 
-    @Override
+        }
+
+        @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
         sessionNameListView = (ListView) findViewById(R.id.history_ListVIew);
-        ArrayAdapter<String> arrayAdapter =  new ArrayAdapter<String>(this,R.layout.activity_history,R.id.history_ListVIew,getSessionsFromDir());
-        sessionNameListView.setAdapter(arrayAdapter);
+        updateSessionsListview();
     }
 
     public List<String> getSessionsFromDir(){
@@ -32,6 +39,12 @@ import java.util.List;
             sessionNames.add(files[i].getName());
         }
         return sessionNames;
+    }
+
+    public void updateSessionsListview(){
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String> (this, R.layout.activity_list_view, R.id.textView,getSessionsFromDir());
+        sessionNameListView.setAdapter(arrayAdapter);
+
     }
 
 }
