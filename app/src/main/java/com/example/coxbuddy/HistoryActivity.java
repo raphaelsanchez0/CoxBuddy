@@ -1,19 +1,14 @@
     package com.example.coxbuddy;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.OnLifecycleEvent;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
     public class HistoryActivity extends AppCompatActivity {
         ListView sessionNameListView;
@@ -36,7 +31,7 @@ import java.util.List;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
-        sessionsArrayList = getSessionsFromDir();
+        sessionsArrayList = getSessionsNamesFromDir();
 
         sessionNameListView = (ListView) findViewById(R.id.history_ListVIew);
         arrayAdapter = new ArrayAdapter<String> (this, R.layout.activity_list_view, R.id.textView,sessionsArrayList);
@@ -45,7 +40,7 @@ import java.util.List;
 
     }
 
-    public ArrayList<String> getSessionsFromDir(){
+    public ArrayList<String> getSessionsNamesFromDir(){
         ArrayList <String> sessionNames = new ArrayList<>();
         File[] files = getApplicationContext().getFilesDir().listFiles();
         for(int i=0;i<files.length;i++){
@@ -57,10 +52,7 @@ import java.util.List;
 
         public void updateListview(){
             sessionsArrayList.clear();
-            File[] files = getApplicationContext().getFilesDir().listFiles();
-            for(int i=0;i<files.length;i++){
-                sessionsArrayList.add(files[i].getName());
-            }
+            sessionsArrayList.addAll(getSessionsNamesFromDir());
             arrayAdapter.notifyDataSetChanged();
         }
 
