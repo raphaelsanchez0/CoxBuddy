@@ -172,22 +172,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(startStopButton.getText().equals("Start")){  //starts timer and distance tracking
-                    if(properPhoneOrientation) {
+                if (startStopButton.getText().equals("Start")) {  //starts timer and distance tracking
 
-                        startStopButton.setText(R.string.stop);
-                        startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
-                        resetButton.setEnabled(false);
+                    startStopButton.setText(R.string.stop);
+                    startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
+                    resetButton.setEnabled(false);
 
-                        //creates a new session object to store datapoints created while timer is toggled
-                        currentSession = new Session();
+                    //creates a new session object to store datapoints created while timer is toggled
+                    currentSession = new Session();
 
-                        startOnTimer();
-                    }else{
-                        Toast.makeText(MainActivity.this, "", Toast.LENGTH_SHORT).show();
-                    }
+                    startOnTimer();
 
-                }else if(startStopButton.getText().equals("Stop")){ //stops timer and distance tracking
+
+                } else if (startStopButton.getText().equals("Stop")) { //stops timer and distance tracking
                     startStopButton.setText(R.string.start);
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
                     resetButton.setEnabled(true);
@@ -234,10 +231,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if(-10<roll && -15<pitch && pitch<15){
             properPhoneOrientation = true;
+            startStopButton.setEnabled(true);
         }else{
             properPhoneOrientation = false;
+            startStopButton.setEnabled(false);
         }
-        accelerationText.setText(properPhoneOrientation+"");
         accelerationCurrentValue = Math.sqrt(x*x + y*y + z*z);
         //may need to wrap changeInAcceleration in Math.abs to avoid negative values
         double changeInAcceleration = accelerationCurrentValue-accelerationPreviousValue;
