@@ -421,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Calendar calender = Calendar.getInstance();
         String dateString=
                 (calender.get(Calendar.HOUR_OF_DAY)) +"("+
-                (calender.get(Calendar.MINUTE))+"("+
+                (calender.get(Calendar.MINUTE))+")"+
                 (calender.get(Calendar.SECOND))+"_"+
                 (calender.get(Calendar.MONTH)+1)+"-"+
                 calender.get(Calendar.DAY_OF_MONTH)+"-"+

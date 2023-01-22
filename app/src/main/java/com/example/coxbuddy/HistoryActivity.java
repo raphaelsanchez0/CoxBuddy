@@ -44,7 +44,15 @@ import java.util.ArrayList;
         ArrayList <String> sessionNames = new ArrayList<>();
         File[] files = getApplicationContext().getFilesDir().listFiles();
         for(int i=0;i<files.length;i++){
-            sessionNames.add(files[i].getName());
+            String currentName = files[i].getName();
+            //Makes names readable - Are saved in HH(MM)SS_M-D-Y
+            //converts string to - HH:MM.SS M/D/Y
+            currentName = currentName.replace('(',':');
+            currentName = currentName.replace(')','.');
+            currentName = currentName.replace('_',' ');
+            currentName = currentName.replace('-','/');
+
+            sessionNames.add(currentName);
         }
         return sessionNames;
     }
