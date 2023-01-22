@@ -8,32 +8,45 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
     public class HistoryActivity extends AppCompatActivity {
         ListView sessionNameListView;
+        ArrayAdapter<String> arrayAdapter;
+
+        ArrayList<String> sessionsArrayList;
+        boolean firstHistoryLaunch = true;
+
 
         @Override
         protected void onResume() {
             super.onResume();
-            updateSessionsListview();
-
-
+            //updateSessionsListview();
+            Toast.makeText(getApplicationContext(),"resumed",Toast.LENGTH_SHORT).show();
+            updateListview();
         }
 
         @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+
+        sessionsArrayList = getSessionsFromDir();
+
         sessionNameListView = (ListView) findViewById(R.id.history_ListVIew);
-        updateSessionsListview();
+        arrayAdapter = new ArrayAdapter<String> (this, R.layout.activity_list_view, R.id.textView,sessionsArrayList);
+        sessionNameListView.setAdapter(arrayAdapter);
+
+
     }
 
-    public List<String> getSessionsFromDir(){
-        List <String> sessionNames = new ArrayList<>();
+    public ArrayList<String> getSessionsFromDir(){
+        ArrayList <String> sessionNames = new ArrayList<>();
         File[] files = getApplicationContext().getFilesDir().listFiles();
         for(int i=0;i<files.length;i++){
             sessionNames.add(files[i].getName());
@@ -41,10 +54,15 @@ import java.util.List;
         return sessionNames;
     }
 
-    public void updateSessionsListview(){
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String> (this, R.layout.activity_list_view, R.id.textView,getSessionsFromDir());
-        sessionNameListView.setAdapter(arrayAdapter);
+
+        public void updateListview(){
+            sessionsArrayList.clear();
+            File[] files = getApplicationContext().getFilesDir().listFiles();
+            for(int i=0;i<files.length;i++){
+                sessionsArrayList.add(files[i].getName());
+            }
+            arrayAdapter.notifyDataSetChanged();
+        }
+
 
     }
-
-}
