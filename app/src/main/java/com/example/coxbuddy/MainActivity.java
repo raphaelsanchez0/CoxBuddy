@@ -118,6 +118,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //list of all filenames that store memory of data
     private ArrayList<String> historyIntentMemory = new ArrayList<String>();
 
+    private boolean properPhoneOrientation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,14 +173,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View view) {
                 if(startStopButton.getText().equals("Start")){  //starts timer and distance tracking
-                    startStopButton.setText(R.string.stop);
-                    startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
-                    resetButton.setEnabled(false);
+                    if(properPhoneOrientation) {
 
-                    //creates a new session object to store datapoints created while timer is toggled
-                    currentSession = new Session();
+                        startStopButton.setText(R.string.stop);
+                        startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
+                        resetButton.setEnabled(false);
 
-                    startOnTimer();
+                        //creates a new session object to store datapoints created while timer is toggled
+                        currentSession = new Session();
+
+                        startOnTimer();
+                    }else{
+                        Toast.makeText(MainActivity.this, "", Toast.LENGTH_SHORT).show();
+                    }
 
                 }else if(startStopButton.getText().equals("Stop")){ //stops timer and distance tracking
                     startStopButton.setText(R.string.start);
@@ -193,6 +200,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         });
+
+
 
         historyButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -211,6 +220,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float x = sensorEvent.values[0];
         float y = sensorEvent.values[1];
         float z = sensorEvent.values[2];
+
+
+
+        //finding pitch and roll
+        //float pitch = atan(xAxis/sqrt(pow(yAxis,2) + pow(zAxis,2)));
+        double pitch = Math.atan(x/Math.sqrt(Math.pow(y,2)+Math.pow(z,2)));
+        //float roll = atan(yAxis/sqrt(pow(xAxis,2) + pow(zAxis,2)));
+        double roll = Math.atan((y/Math.sqrt(Math.pow(x,2)+Math.pow(z,2))));
+
+        pitch = pitch*(180/Math.PI);
+        roll = roll*(180/Math.PI);
+
+        if(-10<roll && -15<pitch && pitch<15){
+            properPhoneOrientation = true;
+        }else{
+            properPhoneOrientation = false;
+        }
+        accelerationText.setText(properPhoneOrientation+"");
         accelerationCurrentValue = Math.sqrt(x*x + y*y + z*z);
         //may need to wrap changeInAcceleration in Math.abs to avoid negative values
         double changeInAcceleration = accelerationCurrentValue-accelerationPreviousValue;
