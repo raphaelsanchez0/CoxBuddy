@@ -54,6 +54,9 @@ import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import com.kircherelectronics.fsensor.BaseFilter;
+import com.kircherelectronics.fsensor.filter.averaging.LowPassFilter;
+
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,6 +65,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+
+
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     //declares Button and Textview objects
@@ -69,9 +74,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button resetButton;
     private Button historyButton;
 
+
     private TextView splitText;
     private TextView totalDistanceTraveledText;
     private TextView strokesPerMinuteText;
+
 
     private LocationRequest locationRequest;
 
@@ -105,8 +112,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //series are containers for the data itself which work with the Viewports
     private LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
     //current Series is a pointed used to hold the series currently being created while the timer is enabled
-
-
+    private LineGraphSeries<DataPoint> currentSeries;
 
     private Session currentSession;
 
@@ -119,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<String> historyIntentMemory = new ArrayList<String>();
 
     private boolean properPhoneOrientation;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this,accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        accelerationText = (TextView) findViewById(R.id.acceleration_text);
+
 
         //sets rawGraph as target and configures viewport
         GraphView graph = (GraphView) findViewById(R.id.rawGraph);
@@ -154,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //after location request has been created, location data is called to start tracking user location
         getLocationData();
 
+
         //reset button only enabled when timer is stopped. Eventually make reset button hold to reset
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,6 +172,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 chronometer.stop();
                 chronometer.setBase(SystemClock.elapsedRealtime());
                 lastPause = 0;
+                //saves the graph data (series) to the current session
+                currentSession.setGraphSeries(currentSeries);
+                //Saves the current session
+                writeSessionToFile(currentSession);
 
             }
         });
@@ -179,7 +192,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     resetButton.setEnabled(false);
 
                     //creates a new session object to store datapoints created while timer is toggled
-                    currentSession = new Session();
+                    if(!onTimerToggle){
+                        currentSession = new Session();
+                        currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+                    }
+
+
+
+
+
+
 
                     startOnTimer();
 
@@ -189,9 +211,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
                     resetButton.setEnabled(true);
 
-                    //Adds the current to an Arraylist of sessions
-                    sessions.add(currentSession);
-                    writeSessionToFile(currentSession);
+
 
                     stopOnTimer();
                 }
@@ -207,6 +227,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+
+            }
+        });
+
 
 
     }
@@ -218,13 +245,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float y = sensorEvent.values[1];
         float z = sensorEvent.values[2];
 
-
-
         //finding pitch and roll
-        //float pitch = atan(xAxis/sqrt(pow(yAxis,2) + pow(zAxis,2)));
         double pitch = Math.atan(x/Math.sqrt(Math.pow(y,2)+Math.pow(z,2)));
-        //float roll = atan(yAxis/sqrt(pow(xAxis,2) + pow(zAxis,2)));
         double roll = Math.atan((y/Math.sqrt(Math.pow(x,2)+Math.pow(z,2))));
+
+
 
         pitch = pitch*(180/Math.PI);
         roll = roll*(180/Math.PI);
@@ -236,24 +261,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             properPhoneOrientation = false;
             startStopButton.setEnabled(false);
         }
-        accelerationCurrentValue = Math.sqrt(x*x + y*y + z*z);
+
+
+        accelerationCurrentValue = Math.sqrt(y*y + z*z);
+
+
         //may need to wrap changeInAcceleration in Math.abs to avoid negative values
         double changeInAcceleration = accelerationCurrentValue-accelerationPreviousValue;
         accelerationPreviousValue = accelerationCurrentValue;
+
+        double smoothing = 5;
+        double smoothAccel = 0 ;
+        smoothAccel += (changeInAcceleration-smoothAccel)/smoothing;
+
+
 
 
         //Main-graph pointsplotted increases by one
         pointsPlotted+=1;
 
         //adds point to graph
-        graphSeries.appendData(new DataPoint(pointsPlotted,changeInAcceleration),true,500);
+        graphSeries.appendData(new DataPoint(pointsPlotted,smoothAccel),true,500);
 
         graphViewport.setMaxX(pointsPlotted);
         graphViewport.setMinX(pointsPlotted-500);
 
         if (onTimerToggle){
-
             currentSession.addPoint(changeInAcceleration);
+            currentSeries.appendData(new DataPoint(pointsPlotted,smoothAccel),true,500);
 
         }
 
@@ -265,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
+
 
     private void startOnTimer() {
         onTimerToggle = true;

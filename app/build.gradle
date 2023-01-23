@@ -25,6 +25,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
 }
 
 dependencies {
@@ -38,4 +39,5 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:19.0.1'
     implementation 'com.jjoe64:graphview:4.2.2'
     implementation 'com.jjoe64:graphview:4.2.2'
+    implementation 'com.github.KalebKE:FSensor:v2.2'
 }

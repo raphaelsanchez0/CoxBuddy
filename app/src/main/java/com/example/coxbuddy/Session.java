@@ -9,11 +9,15 @@ import java.util.ArrayList;
 public class Session {
 
     ArrayList<Double> period;
+    ArrayList<SessionSecond> sessionData; //arraylist of split, speed, etc. at every second in session
     int totalPoints;
+    LineGraphSeries<DataPoint> graphSeries;
 
     public Session (){
         this.period = new ArrayList<>();
+        this.sessionData = new ArrayList<>();
         this.totalPoints=0;
+        this.graphSeries = null;
     }
 
     public void addPoint(Double point){
@@ -41,5 +45,13 @@ public class Session {
 
     public void setTotalPoints(int totalPoints) {
         this.totalPoints = totalPoints;
+    }
+
+    public LineGraphSeries<DataPoint> getGraphSeries() {
+        return graphSeries;
+    }
+
+    public void setGraphSeries(LineGraphSeries<DataPoint> graphSeries) {
+        this.graphSeries = graphSeries;
     }
 }
