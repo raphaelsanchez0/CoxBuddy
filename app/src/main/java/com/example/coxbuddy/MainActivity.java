@@ -20,22 +20,16 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 
-import android.os.Environment;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 
 import com.google.android.gms.common.api.ApiException;
@@ -54,14 +48,10 @@ import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import com.kircherelectronics.fsensor.BaseFilter;
-import com.kircherelectronics.fsensor.filter.averaging.LowPassFilter;
-
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -126,6 +116,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private boolean properPhoneOrientation;
 
+    private int currentSessionLength =0;
+
+    private SessionSecond currentSessionSecond;
+
+    double split;
+    float speed;
+
 
 
     @Override
@@ -162,6 +159,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //after location request has been created, location data is called to start tracking user location
         getLocationData();
 
+        currentSession = new Session();
+        currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+
 
         //reset button only enabled when timer is stopped. Eventually make reset button hold to reset
         resetButton.setOnClickListener(new View.OnClickListener() {
@@ -176,6 +176,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 currentSession.setGraphSeries(currentSeries);
                 //Saves the current session
                 writeSessionToFile(currentSession);
+
+                currentSession = new Session();
+                currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
 
             }
         });
@@ -193,8 +196,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     //creates a new session object to store datapoints created while timer is toggled
                     if(!onTimerToggle){
-                        currentSession = new Session();
-                        currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+
                     }
 
 
@@ -230,6 +232,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
+                if(onTimerToggle){
+                    currentSessionSecond = new SessionSecond(split+"",totalDistanceTraveled+"",speed+"",currentSessionLength);
+                            //SessionSecond(String split, String distance, String speed, String chrono, int second)
+                    currentSession.sessionData.add(currentSessionSecond);
+                    currentSessionLength +=1;
+                    Toast.makeText(MainActivity.this, currentSessionLength+"", Toast.LENGTH_SHORT).show();
+                }//else if(!onTimerToggle &&)
 
             }
         });
@@ -287,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         graphViewport.setMinX(pointsPlotted-500);
 
         if (onTimerToggle){
-            currentSession.addPoint(changeInAcceleration);
+            currentSession.addPoint(smoothAccel);
             currentSeries.appendData(new DataPoint(pointsPlotted,smoothAccel),true,500);
 
         }
@@ -382,8 +391,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
-                                        float speed = currentLocation.getSpeed();
-                                        double split = SplitFormater.getSplit(speed);
+                                         speed = currentLocation.getSpeed();
+                                        split = SplitFormater.getSplit(speed);
 
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
                                         locationLog.add(new LatLng(latitude,longitude,currentTime, onTimerToggle));

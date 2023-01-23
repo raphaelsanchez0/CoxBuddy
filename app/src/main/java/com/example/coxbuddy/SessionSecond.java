@@ -4,14 +4,13 @@ public class SessionSecond {
     String split;
     String distance;
     String speed;
-    String chrono;
+
     int second;
 
-    public SessionSecond(String split, String distance, String speed, String chrono, int second) {
+    public SessionSecond(String split, String distance, String speed, int second) {
         this.split = split;
         this.distance = distance;
         this.speed = speed;
-        this.chrono = chrono;
         this.second = second;
     }
 
@@ -42,11 +41,4 @@ public class SessionSecond {
         this.speed = speed;
     }
 
-    public String getChrono() {
-        return chrono;
-    }
-
-    public void setChrono(String chrono) {
-        this.chrono = chrono;
-    }
 }

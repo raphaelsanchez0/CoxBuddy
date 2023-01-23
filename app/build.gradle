@@ -1,5 +1,7 @@
 plugins {
     id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -21,10 +23,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+
+    buildFeatures{
+        viewBinding true
+    }
+
+
+
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+
 
 }
 
@@ -40,4 +53,8 @@ dependencies {
     implementation 'com.jjoe64:graphview:4.2.2'
     implementation 'com.jjoe64:graphview:4.2.2'
     implementation 'com.github.KalebKE:FSensor:v2.2'
+
+
+
+
 }

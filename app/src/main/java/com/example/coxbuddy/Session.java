@@ -1,5 +1,8 @@
 package com.example.coxbuddy;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -54,4 +57,10 @@ public class Session {
     public void setGraphSeries(LineGraphSeries<DataPoint> graphSeries) {
         this.graphSeries = graphSeries;
     }
+
+    public void addData(SessionSecond sessionSecond){
+        this.sessionData.add(sessionSecond);
+    }
+
+
 }
