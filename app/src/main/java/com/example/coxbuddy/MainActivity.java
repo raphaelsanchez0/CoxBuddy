@@ -22,16 +22,13 @@ import android.os.Bundle;
 
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.text.SimpleDateFormat;
-
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationCallback;
@@ -50,7 +47,6 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -62,13 +58,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //declares Button and Textview objects
     private Button startStopButton;
     private Button resetButton;
-    private Button historyButton;
-
+    private Button graphToggleButton;
 
     private TextView splitText;
     private TextView totalDistanceTraveledText;
     private TextView strokesPerMinuteText;
-
 
     private LocationRequest locationRequest;
 
@@ -89,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private Sensor accelerometer;
     private SensorManager sensorManager;
-    private TextView accelerationText;
 
     private double accelerationCurrentValue;
     private double accelerationPreviousValue;
@@ -100,28 +93,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Viewport graphViewport;
 
     //series are containers for the data itself which work with the Viewports
-    private LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
-    //current Series is a pointed used to hold the series currently being created while the timer is enabled
-    private LineGraphSeries<DataPoint> currentSeries;
-
-    private Session currentSession;
-
-    private ArrayList<Session> sessions = new ArrayList<Session>();
-
-    private FileWriter currentWriter;
-    private FileOutputStream currentFileStream;
+    private LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<>(new DataPoint[]{});
 
     //list of all filenames that store memory of data
     private ArrayList<String> historyIntentMemory = new ArrayList<String>();
 
     private boolean properPhoneOrientation;
 
-    private int currentSessionLength =0;
+    private double split;
+    private float speed;
 
-    private SessionSecond currentSessionSecond;
+    //the most effective strokerate acceleration value
+    final double STROKE_RATE_VALUE = -0.2;
 
-    double split;
-    float speed;
+    private Double previousStrokeTime;
+
+    private boolean timeStamped = true;
+
+    private double strokeRate = 0;
 
 
 
@@ -136,7 +125,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         totalDistanceTraveledText = findViewById(R.id.totalDistance_text);
         startStopButton = findViewById(R.id.start_stop_button);
         resetButton = findViewById(R.id.reset_button);
-        historyButton = findViewById(R.id.history_button);
+
+        graphToggleButton = findViewById(R.id.graph_Toggle_button);
+
         chronometer = findViewById(R.id.chronometer_text);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -150,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         graphViewport.setScrollable(true);
         graphViewport.setXAxisBoundsManual(true);
         graph.addSeries(graphSeries);
+        graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
 
         //creates location request objects and sets values to them.
         locationRequest = LocationRequest.create()
@@ -159,8 +151,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //after location request has been created, location data is called to start tracking user location
         getLocationData();
 
-        currentSession = new Session();
-        currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
+
+
 
 
         //reset button only enabled when timer is stopped. Eventually make reset button hold to reset
@@ -172,13 +164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 chronometer.stop();
                 chronometer.setBase(SystemClock.elapsedRealtime());
                 lastPause = 0;
-                //saves the graph data (series) to the current session
-                currentSession.setGraphSeries(currentSeries);
-                //Saves the current session
-                writeSessionToFile(currentSession);
 
-                currentSession = new Session();
-                currentSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {});
 
             }
         });
@@ -189,65 +175,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View view) {
                 if (startStopButton.getText().equals("Start")) {  //starts timer and distance tracking
-
                     startStopButton.setText(R.string.stop);
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.stop_red));
                     resetButton.setEnabled(false);
 
-                    //creates a new session object to store datapoints created while timer is toggled
-                    if(!onTimerToggle){
-
-                    }
-
-
-
-
-
-
-
                     startOnTimer();
-
 
                 } else if (startStopButton.getText().equals("Stop")) { //stops timer and distance tracking
                     startStopButton.setText(R.string.start);
                     startStopButton.setBackgroundColor(getResources().getColor(R.color.go_green));
                     resetButton.setEnabled(true);
 
-
-
                     stopOnTimer();
+
                 }
             }
         });
 
-
-
-        historyButton.setOnClickListener(new View.OnClickListener() {
+        graphToggleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                launchHistoryActivity(view);
+                if(graph.getVisibility() == View.VISIBLE){
+                    graph.setVisibility(View.GONE);
+                }else{
+                    graph.setVisibility(View.VISIBLE);
+                }
             }
         });
-
-        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-            @Override
-            public void onChronometerTick(Chronometer chronometer) {
-                if(onTimerToggle){
-                    currentSessionSecond = new SessionSecond(split+"",totalDistanceTraveled+"",speed+"",currentSessionLength);
-                            //SessionSecond(String split, String distance, String speed, String chrono, int second)
-                    currentSession.sessionData.add(currentSessionSecond);
-                    currentSessionLength +=1;
-                    Toast.makeText(MainActivity.this, currentSessionLength+"", Toast.LENGTH_SHORT).show();
-                }//else if(!onTimerToggle &&)
-
-            }
-        });
-
-
-
     }
-
-
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         float x = sensorEvent.values[0];
@@ -257,8 +212,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //finding pitch and roll
         double pitch = Math.atan(x/Math.sqrt(Math.pow(y,2)+Math.pow(z,2)));
         double roll = Math.atan((y/Math.sqrt(Math.pow(x,2)+Math.pow(z,2))));
-
-
 
         pitch = pitch*(180/Math.PI);
         roll = roll*(180/Math.PI);
@@ -271,22 +224,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             startStopButton.setEnabled(false);
         }
 
-
         accelerationCurrentValue = Math.sqrt(y*y + z*z);
 
-
-        //may need to wrap changeInAcceleration in Math.abs to avoid negative values
         double changeInAcceleration = accelerationCurrentValue-accelerationPreviousValue;
         accelerationPreviousValue = accelerationCurrentValue;
 
+        //normalizes the acceleration values
         double smoothing = 5;
         double smoothAccel = 0 ;
         smoothAccel += (changeInAcceleration-smoothAccel)/smoothing;
 
-
-
-
-        //Main-graph pointsplotted increases by one
+        //Graph pointsPlotted increases by one
         pointsPlotted+=1;
 
         //adds point to graph
@@ -295,21 +243,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         graphViewport.setMaxX(pointsPlotted);
         graphViewport.setMinX(pointsPlotted-500);
 
-        if (onTimerToggle){
-            currentSession.addPoint(smoothAccel);
-            currentSeries.appendData(new DataPoint(pointsPlotted,smoothAccel),true,500);
+        //the algorithm that determines strokerate based off acceleration
+        if(smoothAccel >0){
+            timeStamped = true;
 
         }
-
-
-
+        if(smoothAccel < STROKE_RATE_VALUE && timeStamped){
+            if(previousStrokeTime != null){
+                Double timeDiffInMillis = getCurrentMillis()-previousStrokeTime;
+                timeStamped = false;
+                strokeRate = 60000/timeDiffInMillis;
+                //60,000 is the milliseconds in a minute. Dividing a minute by diff in stroke yields stroke rate.
+                strokesPerMinuteText.setText(String.valueOf((int)strokeRate));
+                previousStrokeTime = getCurrentMillis();
+                Log.d("pulse", timeDiffInMillis+"");
+            }else{
+                previousStrokeTime = getCurrentMillis();
+            }
+        }
     }
 
+    //must be included to implement SensorEventListener in MainActivity class (line 56), even if empty
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
-
 
     private void startOnTimer() {
         onTimerToggle = true;
@@ -331,8 +289,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         lastPause = SystemClock.elapsedRealtime();
     }
 
-
-
+    //handles resolving location permissions if not already granted
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -340,17 +297,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
 
                 if (isGPSEnabled()) {
-
                     getLocationData();
-
                 }else {
-
                     turnOnGPS();
                 }
             }
         }
-
-
     }
 
     @Override
@@ -365,6 +317,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    //handles resolving location data
     private void getLocationData() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -381,17 +334,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                         int index = locationResult.getLocations().size() - 1;
                                         Location currentLocation = locationResult.getLocations().get(index);
 
-
-
-
                                         //LocationResult = locationResult.getLocations()
                                         double latitude = currentLocation.getLatitude();
                                         double longitude = currentLocation.getLongitude();
 
-
-
-
-                                         speed = currentLocation.getSpeed();
+                                        speed = currentLocation.getSpeed();
                                         split = SplitFormater.getSplit(speed);
 
                                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
@@ -406,22 +353,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                                 if (onTimerToggle) { //if onTimerToggled enabled, distance between two point will be calculated and added to totalDistanceTraveled
                                                     Location.distanceBetween(lat1,lng1,lat2,lng2, locationResults);
                                                     totalDistanceTraveled += locationResults[0];
-
                                                 }
 
-                                                strokesPerMinuteText.setText(String.valueOf(speed));
                                                 splitText.setText(SplitFormater.FormatToSplitString(split));
                                                 totalDistanceTraveledText.setText(String.valueOf(totalDistanceTraveled));
                                             }
-
                                     }
                                 }
                             }, Looper.getMainLooper());
-
                 } else {
                     turnOnGPS();
                 }
-
             } else {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
@@ -439,10 +381,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
             @Override
             public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
-
                 try {
                     LocationSettingsResponse response = task.getResult(ApiException.class);
-                    Toast.makeText(MainActivity.this, "GPS is already tured on", Toast.LENGTH_SHORT).show();
 
                 } catch (ApiException e) {
 
@@ -464,9 +404,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         });
-
     }
 
+    //helper function for
     private boolean isGPSEnabled() {
         LocationManager locationManager = null;
         boolean isEnabled = false;
@@ -480,43 +420,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    private void launchHistoryActivity(View v){
-        Intent intent = new Intent(this,HistoryActivity.class);
-        intent.putExtra("memory", historyIntentMemory);
-        startActivity(intent);
-
+    private double getCurrentMillis(){
+        Long l = System.currentTimeMillis();
+        return l.doubleValue();
     }
-
-    private String getCurrentDateTime(){
-        Calendar calender = Calendar.getInstance();
-        String dateString=
-                (calender.get(Calendar.HOUR_OF_DAY)) +"("+
-                (calender.get(Calendar.MINUTE))+")"+
-                (calender.get(Calendar.SECOND))+"_"+
-                (calender.get(Calendar.MONTH)+1)+"-"+
-                calender.get(Calendar.DAY_OF_MONTH)+"-"+
-                calender.get(Calendar.YEAR);
-
-        return dateString;
-
-    }
-
-    public void writeSessionToFile(Session session){
-        try{
-            FileOutputStream fis = openFileOutput(getCurrentDateTime(),MODE_PRIVATE);
-            //gets every point in the session and writes them to a file named 'DATETIME"
-            for(int i = 0; i<session.totalPoints;i++){
-                double currentDataPoints = session.getPointAtX(i);
-                fis.write((currentDataPoints+"").getBytes());
-            }
-            fis.close();
-            Toast.makeText(getApplicationContext(),"Wrote to file"+getCurrentDateTime(),Toast.LENGTH_SHORT).show();
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-
-
 }

@@ -19,15 +19,6 @@ public class LatLng {
         return Lng;
 
     }
-
-    public boolean getIfTrackingEnabled(){
-        return trackingEnabled;
-    }
-
-    public String getTimeStamp(){
-        return time;
-    }
-//HH:mm:ss
     public String toString(){
         return ""+Lat+","+Lng+","+time;
     }

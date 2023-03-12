@@ -1,7 +1,5 @@
 package com.example.coxbuddy;
 
-import android.util.Log;
-
 public class SplitFormater {
 
     public static double getSplit(float speed) {
