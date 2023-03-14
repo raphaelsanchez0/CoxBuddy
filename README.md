@@ -1,5 +1,5 @@
 # CoxBuddy
-CoxBuddy is an Android mobile application for coxswains (rowing). CoxBuddy preforms the same function as a [CoxBox](https://nksports.com/coxbox-gps). 
+CoxBuddy is an Android mobile application for coxswains (rowing) that tracks boat statisitics in real time. CoxBuddy preforms the same function as a [CoxBox](https://nksports.com/coxbox-gps). 
 ## What does CoxBuddy do?
 In crew, the coxswain is the member who does not row but steers the boat and faces forward, towards the front.
 The coxswain is responsible for steering the boat and cordinating the workouts, which involves knowing several statistics that the Coxswain
