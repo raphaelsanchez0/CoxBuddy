@@ -11,6 +11,10 @@ CoxBuddy shows:<br>
 * Distance
 * Strokes per Minute(SPM)
 * Time elapsed (Chronomter)
-* Current acceleration graphed
+* Current acceleration graphed <br>
+## What I learned:
+* Java
+* How to develop in Android Studio
+* How to use 3rd Party Libraries in Android Studio
 
 ![coxbuddyss](https://user-images.githubusercontent.com/40778747/225027690-1c4311ed-d56a-4476-bd0e-cc9234ce456e.png)
